@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import apiInstance from "../../utils/axios";
 import { useAuthStore } from "../../store/auth";
@@ -9,12 +9,23 @@ const StoreHeader = () => {
 
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
   const user = useAuthStore((state) => state.user);
+  const [search, setSearch] = useState("");
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     apiInstance.get("category/").then((res) => {
       setCategories(res.data);
     });
   }, []);
+
+  const handleSearchChange = (event) => {
+    setSearch(event.target.value);
+  };
+
+  const handleSearchSubmit = () => {
+    navigate(`/search?query=${search}`);
+  };
 
   return (
     <>
@@ -97,8 +108,13 @@ const StoreHeader = () => {
                 type="text"
                 className="form-control"
                 placeholder="Search products..."
+                onChange={handleSearchChange}
               />
-              <button className="btn btn-warning" type="button">
+              <button
+                onClick={handleSearchSubmit}
+                className="btn btn-warning"
+                type="button"
+              >
                 <i className="fas fa-search"></i>
               </button>
             </div>
@@ -123,8 +139,13 @@ const StoreHeader = () => {
                   type="text"
                   className="form-control"
                   placeholder="Search products..."
+                  onChange={handleSearchChange}
                 />
-                <button className="btn btn-warning" type="button">
+                <button
+                  onClick={handleSearchSubmit}
+                  className="btn btn-warning"
+                  type="button"
+                >
                   <i className="fas fa-search"></i>
                 </button>
               </div>
@@ -292,6 +313,10 @@ const StoreHeader = () => {
                 </Link>
               </li>
             ))}
+
+            <Link to={`/search/?query=${""}`} className="nav-link text-dark px-0">
+              All Categories
+            </Link>
           </ul>
         </div>
       </div>

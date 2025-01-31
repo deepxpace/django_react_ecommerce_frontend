@@ -19,6 +19,7 @@ import ProductDetail from "./views/store/ProductDetail";
 import Cart from "./views/store/Cart";
 import Checkout from "./views/store/Checkout";
 import PaymentSuccess from "./views/store/PaymentSuccess";
+import Search from "./views/store/Search";
 
 function App() {
   useEffect(() => {
@@ -42,6 +43,7 @@ function App() {
         <Route path="/cart/" element={<Cart />} />
         <Route path="/checkout/:order_oid/" element={<Checkout />} />
         <Route path="/payment-success/:order_oid/" element={<PaymentSuccess />} />
+        <Route path="/search/" element={<Search />} />
       </Routes>
       <StoreFooter />
     </BrowserRouter>

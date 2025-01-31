@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import apiInstance from "../../utils/axios";
 import GetCurrentAddress from "../plugin/UserCountry";
@@ -28,6 +28,8 @@ function Products() {
   const currentAddress = GetCurrentAddress();
   const userData = UserData();
   const cartID = CartID();
+
+  const navigate = useNavigate();
 
   const handleSizeButton = (productId, sizeName) => {
     setSelectedSizes((prev) => ({ ...prev, [productId]: sizeName }));
@@ -97,6 +99,11 @@ function Products() {
     }
   };
 
+  const handleCategoryClick = (categoryId) => {
+    // Navigate to search page with category pre-selected
+    navigate(`/search/?category=${categoryId}`);
+  };
+
   // Initialize default selections when products load
   useEffect(() => {
     const initialSizes = {};
@@ -161,8 +168,8 @@ function Products() {
 
           <hr />
 
-          <section className="text-center">
-            <div className="row py-lg-5">
+          <section>
+            <div className="row py-lg-5 text-center">
               <div className="col-lg-6 col-md-8 mx-auto">
                 <h1 className="fw-light">Featured Products</h1>
                 <p className="lead text-muted">
@@ -171,7 +178,7 @@ function Products() {
                 </p>
               </div>
             </div>
-            <div className="row pt-2">
+            <div className="pt-2 row row-cols-2 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 g-3">
               {products?.map((p, index) => (
                 <div className="col-lg-3 col-md-6 mb-4" key={index}>
                   <div className="card border-1 border-light rounded-1 h-100 d-flex flex-column">
@@ -227,7 +234,7 @@ function Products() {
                                     width: "100%",
                                   }}
                                 >
-                                  Variation
+                                  <span className="me-1">Select</span>
                                 </button>
                                 <ul
                                   className="dropdown-menu p-3"
@@ -267,10 +274,7 @@ function Products() {
                                                 : "btn-outline-secondary"
                                             }`}
                                             onClick={() => {
-                                              handleSizeButton(
-                                                p.id,
-                                                size.name
-                                              );
+                                              handleSizeButton(p.id, size.name);
                                             }}
                                           >
                                             {size.name}
@@ -368,7 +372,9 @@ function Products() {
                                   }
                                 >
                                   <i className="fas fa-shopping-cart me-2" />
-                                  Add to Cart
+                                  <span className="d-none d-sm-inline">
+                                    Add to Cart
+                                  </span>
                                 </button>
                                 <button
                                   type="button"
@@ -388,7 +394,7 @@ function Products() {
             </div>
 
             {/* Category Section */}
-            <div className="row py-lg-5 pt-5">
+            <div className="row py-lg-5 pt-5 text-center">
               <div className="col-lg-6 col-md-8 mx-auto">
                 <h1 className="fw-light">Browse Category</h1>
               </div>
@@ -398,6 +404,8 @@ function Products() {
                 <div
                   className="col-lg-2 col-md-3 col-sm-4 col-6 mb-4 text-center"
                   key={index}
+                  onClick={() => handleCategoryClick(c.id)}
+                  style={{ cursor: "pointer" }}
                 >
                   <img
                     src={c.image}

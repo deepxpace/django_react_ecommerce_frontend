@@ -22,6 +22,12 @@ function ProductDetail() {
   const [question, setQuestion] = useState({ name: "", content: "" });
 
   const [reviews, setReviews] = useState([]);
+  const [createReview, setCreateReview] = useState({
+    user_id: 0,
+    product_id: product?.id,
+    review: "",
+    rating: 0,
+  });
 
   const param = useParams();
   const currentAddress = GetCurrentAddress();
@@ -74,17 +80,38 @@ function ProductDetail() {
     }
   };
 
-  useEffect(() => {
-    const fetchReviewData = async () => {
-      if (product) {
-        await apiInstance.get(`reviews/${product?.id}/`).then((res) => {
-          setReviews(res.data);
-        });
-      }
-    };
+  const fetchReviewData = async () => {
+    if (product) {
+      await apiInstance.get(`reviews/${product?.id}/`).then((res) => {
+        setReviews(res.data);
+      });
+    }
+  };
 
+  useEffect(() => {
     fetchReviewData();
   }, [product]);
+
+  const handleReviewChange = (event) => {
+    setCreateReview({
+      ...createReview,
+      [event.target.name]: event.target.value,
+    });
+  };
+
+  const handleReviewSubmit = (e) => {
+    e.preventDefault();
+
+    const formData = new FormData();
+    formData.append("user_id", userData?.user_id);
+    formData.append("product_id", product?.id);
+    formData.append("rating", createReview.rating);
+    formData.append("review", createReview.review);
+
+    apiInstance.post(`reviews/${product?.id}/`, formData).then((res) => {
+      fetchReviewData();
+    });
+  };
 
   return (
     <div className="container py-4">
@@ -390,16 +417,14 @@ function ProductDetail() {
                         <label className="form-label small">Rating</label>
                         <select
                           className="form-select form-select-sm"
-                          value={review.rating}
-                          onChange={(e) =>
-                            setReview({ ...review, rating: e.target.value })
-                          }
+                          name="rating"
+                          onChange={handleReviewChange}
                         >
-                          {[5, 4, 3, 2, 1].map((num) => (
-                            <option key={num} value={num}>
-                              {num} Stars
-                            </option>
-                          ))}
+                          <option value={"1"}>1 Star</option>
+                          <option value={"2"}>2 Star</option>
+                          <option value={"3"}>3 Star</option>
+                          <option value={"4"}>4 Star</option>
+                          <option value={"5"}>5 Star</option>
                         </select>
                       </div>
                       <div className="mb-3">
@@ -407,14 +432,17 @@ function ProductDetail() {
                         <textarea
                           className="form-control form-control-sm"
                           rows="3"
-                          value={review.comment}
-                          onChange={(e) =>
-                            setReview({ ...review, comment: e.target.value })
-                          }
+                          required
+                          name="review"
+                          onChange={handleReviewChange}
                           placeholder="Share your experience..."
                         ></textarea>
                       </div>
-                      <button className="btn btn-warning btn-sm">
+                      <button
+                        type="submit"
+                        onClick={handleReviewSubmit}
+                        className="btn btn-warning btn-sm"
+                      >
                         Submit Review
                       </button>
                     </div>

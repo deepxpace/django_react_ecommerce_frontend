@@ -93,6 +93,7 @@ function Checkout() {
   const fetchOrderData = () => {
     apiInstance.get(`checkout/${param.order_oid}/`).then((res) => {
       setOrder(res.data);
+      
       // Check if any order item has a coupon applied
       const hasAppliedCoupon =
         res.data?.orderitem?.some(
@@ -215,7 +216,7 @@ function Checkout() {
           {/* Main Content */}
           <div className="col-lg-8">
             {/* Order Details Card */}
-            <div className="card border-0 mb-4">
+            <div className="card border-0">
               <div className="card-body px-4">
                 <div className="d-flex pb-3 border-bottom justify-content-between align-items-center">
                   <h5 className="mb-0 fw-semibold text-dark">
@@ -269,83 +270,126 @@ function Checkout() {
                   </div>
                 ))}
 
-                {/* Shipping Information */}
-                <div className="pt-2">
-                  <div className="mb-4 border-bottom pb-3">
-                    <h5 className="fw-semibold text-dark mb-0">
-                      <i className="fas fa-truck me-2 text-muted"></i>
-                      Shipping Details
-                    </h5>
-                  </div>
-                  <div className="row g-3">
-                    {[
-                      {
-                        icon: "user",
-                        label: "Full Name",
-                        cols: 6,
-                        value: order?.full_name,
-                      },
-                      {
-                        icon: "envelope",
-                        label: "Email",
-                        cols: 6,
-                        value: order?.email,
-                      },
-                      {
-                        icon: "phone",
-                        label: "Phone",
-                        cols: 6,
-                        value: order?.mobile,
-                      },
-                      {
-                        icon: "map-marker-alt",
-                        label: "Address",
-                        cols: 12,
-                        value: order?.address,
-                      },
-                      {
-                        icon: "city",
-                        label: "City",
-                        cols: 4,
-                        value: order?.city,
-                      },
-                      {
-                        icon: "map",
-                        label: "State",
-                        cols: 4,
-                        value: order?.state,
-                      },
-                      {
-                        icon: "flag",
-                        label: "Country",
-                        cols: 4,
-                        value: order?.country,
-                      },
-                    ].map((field, index) => (
-                      <div
-                        key={index}
-                        className={`col-12 col-md-${field.cols}`}
+                {/* Shipping Information Accordion */}
+                <style>
+                  {`
+            .accordion-button:not(.collapsed) {
+              background-color: white !important;
+              color: inherit !important;
+              box-shadow: none !important;
+            }
+            .accordion-button:focus {
+              box-shadow: none !important;
+              border-color: rgba(0,0,0,.125) !important;
+            }
+            .accordion-button:hover {
+              background-color: white !important;
+            }
+            .accordion-button.collapsed {
+              background-color: white !important;
+            }
+            .accordion-button::after {
+              background-size: 12px !important;
+            }
+            .shipping-accordion .accordion-body {
+              padding: 1rem 0;
+            }
+                  `}
+                </style>
+                <div
+                  className="accordion shipping-accordion"
+                  id="shippingAccordion"
+                >
+                  <div className="accordion-item border-0">
+                    <h2 className="accordion-header" id="headingShipping">
+                      <button
+                        className="accordion-button px-0"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#collapseShipping"
+                        aria-expanded="true"
+                        aria-controls="collapseShipping"
                       >
-                        <div className="input-group">
-                          <span className="input-group-text border-1">
-                            <i
-                              className={`fas fa-${field.icon} text-muted`}
-                            ></i>
-                          </span>
-                          <input
-                            type={field.type}
-                            className="form-control border-1"
-                            placeholder={field.placeholder}
-                            value={field.value}
-                            readOnly
-                            {...(field.type === "tel" && {
-                              pattern: "[0-9]*",
-                              inputMode: "numeric",
-                            })}
-                          />
+                        <h5 className="fw-semibold text-dark mb-0">
+                          <i className="fas fa-truck me-2 text-muted"></i>
+                          Shipping Details
+                        </h5>
+                      </button>
+                    </h2>
+                    <div
+                      id="collapseShipping"
+                      className="accordion-collapse collapse show"
+                      aria-labelledby="headingShipping"
+                    >
+                      <div className="accordion-body">
+                        <div className="row g-3">
+                          {[
+                            {
+                              icon: "user",
+                              label: "Full Name",
+                              cols: 6,
+                              value: order?.full_name,
+                            },
+                            {
+                              icon: "envelope",
+                              label: "Email",
+                              cols: 6,
+                              value: order?.email,
+                            },
+                            {
+                              icon: "phone",
+                              label: "Phone",
+                              cols: 6,
+                              value: order?.mobile,
+                            },
+                            {
+                              icon: "map-marker-alt",
+                              label: "Address",
+                              cols: 12,
+                              value: order?.address,
+                            },
+                            {
+                              icon: "city",
+                              label: "City",
+                              cols: 4,
+                              value: order?.city,
+                            },
+                            {
+                              icon: "map",
+                              label: "State",
+                              cols: 4,
+                              value: order?.state,
+                            },
+                            {
+                              icon: "flag",
+                              label: "Country",
+                              cols: 4,
+                              value: order?.country,
+                            },
+                          ].map((field, index) => (
+                            <div
+                              key={index}
+                              className={`col-12 col-md-${field.cols}`}
+                            >
+                              <div className="input-group">
+                                <span className="input-group-text border-1">
+                                  <i
+                                    className={`fas fa-${field.icon} text-muted`}
+                                  ></i>
+                                </span>
+                                <input
+                                  type="text"
+                                  className="form-control border-1"
+                                  placeholder={field.label}
+                                  value={field.value}
+                                  readOnly
+                                />
+                              </div>
+                            </div>
+                          ))}
                         </div>
                       </div>
-                    ))}
+                    </div>
                   </div>
                 </div>
               </div>
