@@ -15,6 +15,7 @@ const PaymentSuccess = () => {
   const param = useParams();
   const urlParam = new URLSearchParams(window.location.search);
   const sessionId = urlParam.get("session_id");
+  const paypal_order_id = urlParam.get("paypal_order_id");
 
   const statusConfigs = {
     verifying: {
@@ -76,39 +77,47 @@ const PaymentSuccess = () => {
     return details;
   };
 
+  // Effect untuk fetch order data
+  // Effect untuk fetch order data
   useEffect(() => {
     const fetchOrderData = async () => {
       try {
         const res = await apiInstance.get(`checkout/${param.order_oid}/`);
         setOrder(res.data);
       } catch (error) {
-        console.error("Error fetching order data:", error);
+        console.error(
+          "Error fetching order data:",
+          error.response?.data || error
+        );
       }
     };
 
-    fetchOrderData();
+    if (param.order_oid) {
+      fetchOrderData();
+    }
   }, [param.order_oid]);
 
+  // Effect untuk verifikasi pembayaran
   useEffect(() => {
     const verifyPayment = async () => {
-      if (!order.oid || !sessionId) return;
+      if (!param.order_oid) {
+        return;
+      }
 
       try {
         setPaymentStatus(statusConfigs.verifying);
-
-        // Simulate verification delay
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-
         const formData = new FormData();
-        formData.append("order_oid", param?.order_oid);
-        formData.append("session_id", sessionId);
+        formData.append("order_oid", param.order_oid);
+
+        if (sessionId) formData.append("session_id", sessionId);
+        if (paypal_order_id)
+          formData.append("paypal_order_id", paypal_order_id);
 
         const res = await apiInstance.post(
-          `payment-success/${order.oid}/`,
+          `payment-success/${param.order_oid}/`,
           formData
         );
 
-        // Update status based on response
         if (res.data && res.data.status && statusConfigs[res.data.status]) {
           setPaymentStatus({
             ...statusConfigs[res.data.status],
@@ -116,15 +125,17 @@ const PaymentSuccess = () => {
           });
         }
       } catch (error) {
-        console.error("Error verifying payment:", error);
         setPaymentStatus(statusConfigs.error);
       } finally {
         setLoading(false);
       }
     };
 
-    verifyPayment();
-  }, [order.oid, sessionId]);
+    // Hanya jalankan verifikasi jika ada paypal_order_id atau sessionId
+    if (paypal_order_id || sessionId) {
+      verifyPayment();
+    }
+  }, [param.order_oid, sessionId, paypal_order_id]); // Gunakan param.order_oid sebagai dependency // Tambahkan paypal_order_id ke dependencies
 
   const getProgressWidth = () => {
     return "100%";
@@ -235,8 +246,8 @@ const PaymentSuccess = () => {
                   </div>
                   <div className="col-4 text-center">
                     <div
-                        className="rounded-circle border-warning mx-auto d-flex align-items-center justify-content-center bg-warning border border-2"
-                        style={{
+                      className="rounded-circle border-warning mx-auto d-flex align-items-center justify-content-center bg-warning border border-2"
+                      style={{
                         width: "35px",
                         height: "35px",
                         marginTop: "-16px",

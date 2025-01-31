@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
+import moment from "moment";
 
 import apiInstance from "../../utils/axios";
 import GetCurrentAddress from "../plugin/UserCountry";
@@ -19,6 +20,8 @@ function ProductDetail() {
   const [activeTab, setActiveTab] = useState("specifications");
   const [review, setReview] = useState({ rating: 5, comment: "" });
   const [question, setQuestion] = useState({ name: "", content: "" });
+
+  const [reviews, setReviews] = useState([]);
 
   const param = useParams();
   const currentAddress = GetCurrentAddress();
@@ -70,6 +73,18 @@ function ProductDetail() {
       });
     }
   };
+
+  useEffect(() => {
+    const fetchReviewData = async () => {
+      if (product) {
+        await apiInstance.get(`reviews/${product?.id}/`).then((res) => {
+          setReviews(res.data);
+        });
+      }
+    };
+
+    fetchReviewData();
+  }, [product]);
 
   return (
     <div className="container py-4">
@@ -165,8 +180,8 @@ function ProductDetail() {
 
             <div className="d-flex align-items-center mb-2">
               <div className="text-warning me-2" style={{ fontSize: "0.9rem" }}>
-                {"★".repeat(Math.round(product.rating || 0))}
-                {"☆".repeat(5 - Math.round(product.rating || 0))}
+                {"★".repeat(Math.round(product.product_rating || 0))}
+                {"☆".repeat(5 - Math.round(product.product_rating || 0))}
               </div>
               <span className="text-muted small">
                 ({product.rating_count} reviews)
@@ -407,39 +422,46 @@ function ProductDetail() {
                 </div>
                 <div className="col-md-6">
                   <div className="d-flex flex-column gap-3">
-                    {[1, 2].map((_, index) => (
-                      <div key={index} className="card border-0.5 border-light">
-                        <div className="card-body p-3">
-                          <div className="d-flex align-items-center mb-2">
-                            <img
-                              src="https://placehold.co/600x400"
-                              className="rounded-circle me-2"
-                              alt="User"
-                              style={{
-                                width: "40px",
-                                height: "40px",
-                                objectFit: "cover",
-                              }}
-                            />
-                            <div>
-                              <h6 className="mb-0 small">John Doe</h6>
-                              <div
-                                className="text-warning"
-                                style={{ fontSize: "0.8rem" }}
-                              >
-                                {"★".repeat(5)}
+                    {reviews
+                      ?.sort((a, b) => new Date(b.date) - new Date(a.date)) // Sort by date in descending order
+                      .map((r, index) => (
+                        <div
+                          key={index}
+                          className="card border-0.5 border-light"
+                        >
+                          <div className="card-body p-3">
+                            <div className="d-flex align-items-center mb-2">
+                              <img
+                                src={r.profile?.image}
+                                className="rounded-circle me-2"
+                                alt="User"
+                                style={{
+                                  width: "40px",
+                                  height: "40px",
+                                  objectFit: "cover",
+                                }}
+                              />
+                              <div>
+                                <h6 className="mb-0 small">
+                                  {r.profile?.full_name}
+                                </h6>
+                                <div
+                                  className="text-warning"
+                                  style={{ fontSize: "0.8rem" }}
+                                >
+                                  {"★".repeat(r.rating)}
+                                </div>
                               </div>
+                              <small className="text-muted ms-auto">
+                                {moment(r.date).format(
+                                  "dddd, D MMMM, YYYY, h:mm A"
+                                )}
+                              </small>
                             </div>
-                            <small className="text-muted ms-auto">
-                              2 days ago
-                            </small>
+                            <p className="small mb-0">{r.review}</p>
                           </div>
-                          <p className="small mb-0">
-                            Great product! The quality exceeded my expectations.
-                          </p>
                         </div>
-                      </div>
-                    ))}
+                      ))}
                   </div>
                 </div>
               </div>

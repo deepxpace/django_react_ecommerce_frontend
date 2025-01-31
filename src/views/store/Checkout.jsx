@@ -13,6 +13,7 @@ function Checkout() {
   const [paymentLoading, setPaymentLoading] = useState(false);
 
   const param = useParams();
+  const navigate = useNavigate();
 
   const initialOptions = {
     clientId: PAYPAL_CLIENT_ID,
@@ -30,7 +31,6 @@ function Checkout() {
               currency_code: "USD",
               value: order.total.toString(),
             },
-            // Add more details as needed
             description: "Order payment",
           },
         ],
@@ -51,18 +51,23 @@ function Checkout() {
           name: { given_name: payerName },
         },
         status,
-        id: paypalOrderId,
+        id: paypal_order_id,
       } = captureResult;
 
       // Handle successful payment
       console.log({
         payerName,
         status,
-        paypalOrderId,
+        paypal_order_id,
         orderId: data.orderID,
       });
 
-      // Add your success logic here
+      if (status === "COMPLETED") {
+        navigate(
+          `/payment-success/${order.oid}/?paypal_order_id=${paypal_order_id}`
+        );
+      }
+
       return captureResult;
     } catch (error) {
       console.error("Error capturing PayPal order:", error);
