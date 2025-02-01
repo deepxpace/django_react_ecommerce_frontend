@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import apiInstance from "../../utils/axios";
 import { useAuthStore } from "../../store/auth";
+import { CartContext } from "../plugin/Context";
 
 const StoreHeader = () => {
   const [categories, setCategories] = useState([]);
@@ -10,6 +11,8 @@ const StoreHeader = () => {
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
   const user = useAuthStore((state) => state.user);
   const [search, setSearch] = useState("");
+
+  const cartCount = useContext(CartContext);
 
   const navigate = useNavigate();
 
@@ -155,9 +158,9 @@ const StoreHeader = () => {
             <ul className="navbar-nav ms-auto mb-2 mb-lg-0 align-items-lg-center">
               {/* Account Dropdown */}
               <li className="nav-item dropdown">
-                <a
+                <Link
                   className="nav-link dropdown-toggle"
-                  href="#"
+                  to={"/customer/account/"}
                   id="navbarDropdown"
                   role="button"
                   data-bs-toggle="dropdown"
@@ -165,36 +168,40 @@ const StoreHeader = () => {
                 >
                   <i className="fas fa-user me-2" />
                   Account
-                </a>
+                </Link>
                 <ul
                   className="dropdown-menu rounded-1"
                   aria-labelledby="navbarDropdown"
                 >
                   <li>
-                    <Link to={"/customer/account/"} className="dropdown-item">
+                    <Link
+                      to={"/customer/account/"}
+                      className="dropdown-item bg-transparent"
+                    >
                       <i className="fas fa-user"></i> Account
                     </Link>
                   </li>
+
                   <li>
-                    <Link className="dropdown-item" to={`/customer/orders/`}>
+                    <Link className="dropdown-item bg-transparent" to={`/customer/orders/`}>
                       <i className="fas fa-shopping-cart"></i> Orders
                     </Link>
                   </li>
                   <li>
-                    <Link className="dropdown-item" to={`/customer/wishlist/`}>
+                    <Link className="dropdown-item bg-transparent" to={`/customer/wishlist/`}>
                       <i className="fas fa-heart"></i> Wishlist
                     </Link>
                   </li>
                   <li>
                     <Link
-                      className="dropdown-item"
+                      className="dropdown-item bg-transparent"
                       to={`/customer/notifications/`}
                     >
                       <i className="fas fa-bell"></i> Notifications
                     </Link>
                   </li>
                   <li>
-                    <Link className="dropdown-item" to={`/customer/settings/`}>
+                    <Link className="dropdown-item bg-transparent" to={`/customer/settings/`}>
                       <i className="fas fa-gear"></i> Settings
                     </Link>
                   </li>
@@ -219,47 +226,47 @@ const StoreHeader = () => {
                   aria-labelledby="navbarDropdown"
                 >
                   <li>
-                    <Link className="dropdown-item" to="/vendor/dashboard/">
+                    <Link className="dropdown-item bg-transparent" to="/vendor/dashboard/">
                       <i className="fas fa-user"></i> Dashboard
                     </Link>
                   </li>
                   <li>
-                    <Link className="dropdown-item" to="/vendor/products/">
+                    <Link className="dropdown-item bg-transparent" to="/vendor/products/">
                       <i className="bi bi-grid-fill"></i> Products
                     </Link>
                   </li>
                   <li>
-                    <Link className="dropdown-item" to="/vendor/product/new/">
+                    <Link className="dropdown-item bg-transparent" to="/vendor/product/new/">
                       <i className="fas fa-plus-circle"></i> Add Products
                     </Link>
                   </li>
                   <li>
-                    <Link className="dropdown-item" to="/vendor/orders/">
+                    <Link className="dropdown-item bg-transparent" to="/vendor/orders/">
                       <i className="fas fa-shopping-cart"></i> Orders
                     </Link>
                   </li>
                   <li>
-                    <Link className="dropdown-item" to="/vendor/earning/">
+                    <Link className="dropdown-item bg-transparent" to="/vendor/earning/">
                       <i className="fas fa-dollar-sign"></i> Earning
                     </Link>
                   </li>
                   <li>
-                    <Link className="dropdown-item" to="/vendor/reviews/">
+                    <Link className="dropdown-item bg-transparent" to="/vendor/reviews/">
                       <i className="fas fa-star"></i> Reviews
                     </Link>
                   </li>
                   <li>
-                    <Link className="dropdown-item" to="/vendor/coupon/">
+                    <Link className="dropdown-item bg-transparent" to="/vendor/coupon/">
                       <i className="fas fa-tag"></i> Coupon
                     </Link>
                   </li>
                   <li>
-                    <Link className="dropdown-item" to="/vendor/notifications/">
+                    <Link className="dropdown-item bg-transparent" to="/vendor/notifications/">
                       <i className="fas fa-bell"></i> Notifications
                     </Link>
                   </li>
                   <li>
-                    <Link className="dropdown-item" to="/vendor/settings/">
+                    <Link className="dropdown-item bg-transparent" to="/vendor/settings/">
                       <i className="fas fa-gear"></i> Settings
                     </Link>
                   </li>
@@ -289,7 +296,7 @@ const StoreHeader = () => {
                   >
                     <i className="fas fa-shopping-cart"></i>
                     <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                      0
+                      {cartCount}
                     </span>
                   </Link>
                 </div>
@@ -314,7 +321,10 @@ const StoreHeader = () => {
               </li>
             ))}
 
-            <Link to={`/search/?query=${""}`} className="nav-link text-dark px-0">
+            <Link
+              to={`/search/?query=${""}`}
+              className="nav-link text-dark px-0"
+            >
               All Categories
             </Link>
           </ul>

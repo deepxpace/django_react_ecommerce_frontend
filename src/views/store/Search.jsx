@@ -367,7 +367,7 @@ function Search() {
 
                   {/* Clear Filters */}
                   <button
-                    className="btn btn-outline-secondary w-100"
+                    className="btn btn-outline-dark w-100"
                     onClick={clearFilters}
                   >
                     Clear Filters
@@ -549,7 +549,7 @@ function Search() {
                   {/* Clear Filters and Show All */}
                   <div className="mt-2">
                     <button
-                      className="btn btn-outline-secondary w-100"
+                      className="btn btn-outline-dark w-100"
                       onClick={clearFilters}
                     >
                       Clear Filters

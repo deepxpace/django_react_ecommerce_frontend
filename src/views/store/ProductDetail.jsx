@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { useParams, Link } from "react-router-dom";
 import moment from "moment";
 
@@ -6,6 +6,7 @@ import apiInstance from "../../utils/axios";
 import GetCurrentAddress from "../plugin/UserCountry";
 import UserData from "../plugin/UserData";
 import CartID from "../plugin/CartID";
+import { CartContext } from "../plugin/Context";
 
 import { Toast, AlertFailed } from "../base/Alert";
 
@@ -20,6 +21,8 @@ function ProductDetail() {
   const [activeTab, setActiveTab] = useState("specifications");
   const [review, setReview] = useState({ rating: 5, comment: "" });
   const [question, setQuestion] = useState({ name: "", content: "" });
+
+  const [cartCount, setCartCount] = useContext(CartContext);
 
   const [reviews, setReviews] = useState([]);
   const [createReview, setCreateReview] = useState({
@@ -68,6 +71,15 @@ function ProductDetail() {
       formData.append("cart_id", cart_id);
 
       const response = await apiInstance.post("cart-view/", formData);
+
+      const url = userData
+        ? `cart-list/${cart_id}/${userData?.user_id}/`
+        : `cart-list/${cart_id}/`;
+
+      await apiInstance.get(url).then((res) => {
+        setCartCount(res.data.length);
+      });
+
       Toast.fire({
         icon: "success",
         title: response.data.message,

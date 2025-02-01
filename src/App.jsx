@@ -1,6 +1,6 @@
 import { Routes, Route, BrowserRouter } from "react-router-dom";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import { setUser } from "./utils/auth";
 
@@ -13,6 +13,7 @@ import CreatePassword from "./views/auth/CreatePassword";
 import StoreHeader from "./views/base/StoreHeader";
 
 import MainWrapper from "./layout/MainWrapper";
+import PrivateRoute from "./layout/PrivateRoute";
 import StoreFooter from "./views/base/StoreFooter";
 import Products from "./views/store/Products";
 import ProductDetail from "./views/store/ProductDetail";
@@ -20,33 +21,80 @@ import Cart from "./views/store/Cart";
 import Checkout from "./views/store/Checkout";
 import PaymentSuccess from "./views/store/PaymentSuccess";
 import Search from "./views/store/Search";
+import { CartContext } from "./views/plugin/Context";
+
+import CartID from "./views/plugin/CartID";
+import UserData from "./views/plugin/UserData";
+import apiInstance from "./utils/axios";
+import Account from "./views/customer/Account";
+import Orders from "./views/customer/Orders";
 
 function App() {
+  const [cartCount, setCartCount] = useState();
+
   useEffect(() => {
     setUser();
   }, []);
 
-  return (
-    <BrowserRouter>
-      <StoreHeader />
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/logout" element={<Logout />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/create-new-password" element={<CreatePassword />} />
+  const cartId = CartID();
+  const userData = UserData();
 
-        {/* STORE COMPONENTS */}
-        <Route path="/" element={<Products />} />
-        <Route path="/detail/:slug/" element={<ProductDetail />} />
-        <Route path="/cart/" element={<Cart />} />
-        <Route path="/checkout/:order_oid/" element={<Checkout />} />
-        <Route path="/payment-success/:order_oid/" element={<PaymentSuccess />} />
-        <Route path="/search/" element={<Search />} />
-      </Routes>
-      <StoreFooter />
-    </BrowserRouter>
+  useEffect(() => {
+    const url = userData
+      ? `cart-list/${cartId}/${userData?.user_id}/`
+      : `cart-list/${cartId}/`;
+
+    apiInstance.get(url).then((res) => {
+      setCartCount(res.data.length);
+    });
+  });
+
+  return (
+    <CartContext.Provider value={[cartCount, setCartCount]}>
+      <BrowserRouter>
+        <StoreHeader />
+        <MainWrapper>
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/logout" element={<Logout />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/create-new-password" element={<CreatePassword />} />
+
+            {/* STORE COMPONENTS */}
+            <Route path="/" element={<Products />} />
+            <Route path="/detail/:slug/" element={<ProductDetail />} />
+            <Route path="/cart/" element={<Cart />} />
+            <Route path="/checkout/:order_oid/" element={<Checkout />} />
+            <Route
+              path="/payment-success/:order_oid/"
+              element={<PaymentSuccess />}
+            />
+            <Route path="/search/" element={<Search />} />
+
+            {/* CUSTOMER ROUTES */}
+            <Route
+              path="/customer/account/"
+              element={
+                <PrivateRoute>
+                  <Account />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/customer/orders/"
+              element={
+                <PrivateRoute>
+                  <Orders />
+                </PrivateRoute>
+              }
+            />
+          </Routes>
+        </MainWrapper>
+        <StoreFooter />
+      </BrowserRouter>
+    </CartContext.Provider>
   );
 }
 

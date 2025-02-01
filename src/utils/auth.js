@@ -126,7 +126,6 @@ export const isAccessTokenExpired = (accessToken) => {
     const decodedToken = jwtDecode(accessToken);
     return decodedToken.exp < Date.now() / 100;
   } catch (error) {
-    console.log(error);
     return true;
   }
 };

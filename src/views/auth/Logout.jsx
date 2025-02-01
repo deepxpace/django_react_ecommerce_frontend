@@ -1,8 +1,10 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { logout } from "../../utils/auth";
 
 function Logout() {
+  const [isLoading, setIsLoading] = useState(true);
+
   useEffect(() => {
     logout();
   }, []);
@@ -89,7 +91,7 @@ function Logout() {
                         <div className="d-flex justify-content-center gap-2 mb-4 flex-wrap">
                           <span
                             className="badge text-dark"
-                            style={{ background: "#EEF2F7"}}
+                            style={{ background: "#EEF2F7" }}
                           >
                             <i className="fas fa-store-alt me-2"></i>10K+
                             Vendors
@@ -195,17 +197,6 @@ function Logout() {
             0% { transform: translateY(0px); }
             50% { transform: translateY(-10px); }
             100% { transform: translateY(0px); }
-          }
-
-          .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-          }
-
-          .badge {
-            padding: 0.75rem 1rem;
-            font-weight: 500;
-            font-size: 0.9rem;
           }
         `}
       </style>

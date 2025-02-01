@@ -54,14 +54,6 @@ function Checkout() {
         id: paypal_order_id,
       } = captureResult;
 
-      // Handle successful payment
-      console.log({
-        payerName,
-        status,
-        paypal_order_id,
-        orderId: data.orderID,
-      });
-
       if (status === "COMPLETED") {
         navigate(
           `/payment-success/${order.oid}/?paypal_order_id=${paypal_order_id}`
@@ -130,7 +122,6 @@ function Checkout() {
         });
       }
     } catch (error) {
-      console.log(error);
       Toast.fire({
         icon: "error",
         title: "Failed to apply coupon",

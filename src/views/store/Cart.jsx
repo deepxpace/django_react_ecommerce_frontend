@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import apiInstance from "../../utils/axios";
 import UserData from "../plugin/UserData";
 import CartID from "../plugin/CartID";
 import GetCurrentAddress from "../plugin/UserCountry";
+import { CartContext } from "../plugin/Context";
 
 import { Toast, AlertFailed } from "../base/Alert";
 import { useNavigate } from "react-router-dom";
@@ -22,6 +23,8 @@ function Cart() {
   const [state, setState] = useState("");
   const [country, setCountry] = useState("");
 
+  const [cartCount, setCartCount] = useContext(CartContext);
+
   const userData = UserData();
   const cartID = CartID();
   const currentAddress = GetCurrentAddress();
@@ -36,7 +39,10 @@ function Cart() {
     const url = userId
       ? `cart-list/${cartId}/${userId}/`
       : `cart-list/${cartId}/`;
-    apiInstance.get(url).then((res) => setCart(res.data));
+    apiInstance.get(url).then((res) => {
+      setCart(res.data);
+      setCartCount(res.data.length);
+    });
   };
 
   const fetchCartTotal = (cartId, userId) => {
@@ -68,45 +74,6 @@ function Cart() {
       ...prevQuantities,
       [productId]: quantity,
     }));
-  };
-
-  const updateCart = async (
-    productId,
-    price,
-    shippingAmount,
-    selectedSize,
-    selectedColor
-  ) => {
-    try {
-      const qtyValue = productQuantities[productId];
-
-      const formData = new FormData();
-
-      formData.append("product_id", productId);
-      formData.append("user_id", userData?.user_id);
-      formData.append("qty", qtyValue);
-      formData.append("price", price);
-      formData.append("shipping_amount", shippingAmount);
-      formData.append("country", currentAddress.country);
-      formData.append("size", selectedSize);
-      formData.append("color", selectedColor);
-      formData.append("cart_id", cartID);
-
-      const response = await apiInstance.post("cart-view/", formData);
-
-      fetchCartData(cartID, userData?.user_id);
-      fetchCartTotal(cartID, userData?.user_id);
-
-      Toast.fire({
-        icon: "success",
-        title: response.data.message,
-      });
-    } catch (error) {
-      AlertFailed.fire({
-        icon: "error",
-        title: "Failed to add to cart. Please try again",
-      });
-    }
   };
 
   const handleDeleteCartItem = async (itemId) => {

@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import apiInstance from "../../utils/axios";
 import GetCurrentAddress from "../plugin/UserCountry";
 import UserData from "../plugin/UserData";
 import CartID from "../plugin/CartID";
+import { CartContext } from "../plugin/Context";
 
 import { Toast, AlertFailed } from "../base/Alert";
 
@@ -24,6 +25,8 @@ function Products() {
 
   // Selected Product
   const [selectedProduct, setSelectedProduct] = useState(null);
+
+  const [cartCount, setCartCount] = useContext(CartContext);
 
   const currentAddress = GetCurrentAddress();
   const userData = UserData();
@@ -85,6 +88,14 @@ function Products() {
       formData.append("cart_id", cartID);
 
       const response = await apiInstance.post("cart-view/", formData);
+
+      const url = userData
+        ? `cart-list/${cartID}/${userData?.user_id}/`
+        : `cart-list/${cartID}/`;
+
+      await apiInstance.get(url).then((res) => {
+        setCartCount(res.data.length);
+      });
 
       // Alert the user that they have successfully add product to cart
       Toast.fire({
