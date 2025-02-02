@@ -115,6 +115,30 @@ function Products() {
     navigate(`/search/?category=${categoryId}`);
   };
 
+  const addToWishlist = async (productId, userId) => {
+    try {
+      const formData = new FormData();
+
+      formData.append("product_id", productId);
+      formData.append("user_id", userId);
+
+      const response = await apiInstance.post(
+        `customer/wishlist/${userId}/`,
+        formData
+      );
+
+      Toast.fire({
+        icon: "success",
+        title: response.data.message,
+      });
+    } catch (error) {
+      AlertFailed.fire({
+        icon: "error",
+        title: "Something wrong. Please try again",
+      });
+    }
+  };
+
   // Initialize default selections when products load
   useEffect(() => {
     const initialSizes = {};
@@ -349,6 +373,9 @@ function Products() {
                                       Add to Cart
                                     </button>
                                     <button
+                                      onClick={() =>
+                                        addToWishlist(p.id, userData?.user_id)
+                                      }
                                       type="button"
                                       className="btn btn-dark px-3"
                                     >
@@ -357,6 +384,9 @@ function Products() {
                                   </div>
                                 </ul>
                                 <button
+                                  onClick={() =>
+                                    addToWishlist(p.id, userData?.user_id)
+                                  }
                                   type="button"
                                   className="btn btn-dark px-3 ms-2"
                                 >
@@ -388,6 +418,9 @@ function Products() {
                                   </span>
                                 </button>
                                 <button
+                                  onClick={() =>
+                                    addToWishlist(p.id, userData?.user_id)
+                                  }
                                   type="button"
                                   className="btn btn-dark px-3"
                                 >
@@ -433,7 +466,6 @@ function Products() {
               ))}
             </div>
           </section>
-          {/*Section: Wishlist*/}
         </div>
       </main>
     </div>

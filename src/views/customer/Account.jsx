@@ -13,7 +13,6 @@ function Account() {
   useEffect(() => {
     apiInstance.get(`user/profile/${userData?.user_id}/`).then((res) => {
       setProfile(res.data);
-      console.log(res.data);
     });
   }, []);
 
@@ -41,68 +40,87 @@ function Account() {
         {/* Main Content */}
         <main className="col-lg-9 col-xl-10 ms-sm-auto px-4 py-3">
           {/* Welcome Section */}
-          <div className="rounded border p-4 mb-4">
+          <div className="rounded border p-4 mb-4 bg-white">
             <div className="d-flex align-items-center">
-              <div className="flex-shrink-0">
-                <img
-                  src={profile.image}
-                  alt="Profile"
-                  className="rounded-circle object-fit-cover"
-                  width="56"
-                  height="56"
-                />
-              </div>
+              <img
+                src={profile.image}
+                alt="Profile"
+                className="rounded-circle object-fit-cover"
+                width="60"
+                height="60"
+                style={{ border: "3px solid #f8f9fa" }}
+              />
               <div className="ms-3">
-                <h4 className="mb-0">Welcome back, {profile.full_name}!</h4>
-                {/* <p className="text-muted mb-0">Email: {profile.user?.email}</p> */}
+                <h4 className="mb-1 fw-bold text-dark">
+                  Welcome back, {profile.full_name}!
+                </h4>
               </div>
             </div>
           </div>
 
           {/* Quick Actions */}
           <div className="row g-4 mb-4">
-            <div className="col-md-4">
-              <div className="rounded border p-4 h-100">
-                <h3 className="h5 mb-3">Recent Orders</h3>
-                <p className="text-muted mb-2">You have 2 pending orders</p>
-                <Link to={'/customer/orders/'} className="btn btn-warning">View Orders</Link>
+            {[
+              {
+                title: "Recent Orders",
+                desc: "Review all your orders",
+                link: "/customer/orders/",
+                btn: "View Orders",
+                btnClass: "btn-warning",
+              },
+              {
+                title: "Account Settings",
+                desc: "Update your profile details",
+                btn: "Edit Profile",
+                btnClass: "btn-outline-dark",
+              },
+              {
+                title: "Notifications",
+                desc: "You have 3 unread messages",
+                btn: "View All",
+                btnClass: "btn-outline-dark",
+              },
+            ].map((item, index) => (
+              <div className="col-md-4" key={index}>
+                <div className="rounded border p-4 h-100 bg-white text-center">
+                  <h3 className="h5 mb-3 text-dark">{item.title}</h3>
+                  <p className="text-muted">{item.desc}</p>
+                  {item.link ? (
+                    <Link
+                      to={item.link}
+                      className={`btn ${item.btnClass} fw-bold`}
+                    >
+                      {item.btn}
+                    </Link>
+                  ) : (
+                    <button className={`btn ${item.btnClass} fw-bold`}>
+                      {item.btn}
+                    </button>
+                  )}
+                </div>
               </div>
-            </div>
-            <div className="col-md-4">
-              <div className="rounded border p-4 h-100">
-                <h3 className="h5 mb-3">Account Settings</h3>
-                <p className="text-muted mb-2">Update your profile details</p>
-                <button className="btn btn-outline-dark">Edit Profile</button>
-              </div>
-            </div>
-            <div className="col-md-4">
-              <div className="rounded border p-4 h-100">
-                <h3 className="h5 mb-3">Notifications</h3>
-                <p className="text-muted mb-2">You have 3 unread messages</p>
-                <button className="btn btn-outline-dark">View All</button>
-              </div>
-            </div>
+            ))}
           </div>
 
           {/* Account Overview */}
-          <div className="rounded border p-4 mb-4">
-            <h2 className="h4 mb-4">Account Overview</h2>
+          <div className="rounded border p-4 mb-4 bg-white">
+            <h2 className="h4 mb-4 text-dark">Account Overview</h2>
             <div className="row g-4">
               <div className="col-md-6">
                 <div className="mb-3">
-                  <label className="form-label">Email Address</label>
+                  <label className="form-label fw-bold">Email Address</label>
                   <input
                     type="email"
-                    className="form-control"
+                    className="form-control bg-light"
                     value={profile.user?.email}
                     readOnly
                   />
                 </div>
                 <div className="mb-3">
-                  <label className="form-label">Phone Number</label>
+                  <label className="form-label fw-bold">Phone Number</label>
                   <input
                     type="tel"
-                    className="form-control"
+                    className="form-control bg-light"
                     value={profile.user?.phone}
                     readOnly
                   />
@@ -110,9 +128,11 @@ function Account() {
               </div>
               <div className="col-md-6">
                 <div className="mb-3">
-                  <label className="form-label">Default Shipping Address</label>
+                  <label className="form-label fw-bold">
+                    Default Shipping Address
+                  </label>
                   <textarea
-                    className="form-control"
+                    className="form-control bg-light"
                     rows="3"
                     readOnly
                     value={profile.address}
@@ -122,33 +142,37 @@ function Account() {
             </div>
           </div>
 
-          {/* Recent Activity */}
-          <div className="rounded border p-4">
-            <h2 className="h4 mb-4">Recent Activity</h2>
+          {/* Recent Activity
+          <div className="rounded border p-4 bg-white">
+            <h2 className="h4 mb-4 text-dark">Recent Activity</h2>
             <div className="list-group">
-              <div className="list-group-item">
-                <div className="d-flex w-100 justify-content-between">
-                  <h6 className="mb-1">Order #12345 placed</h6>
-                  <small className="text-muted">3 days ago</small>
+              {[
+                {
+                  title: "Order #12345 placed",
+                  time: "3 days ago",
+                  desc: "Status: Processing",
+                },
+                {
+                  title: "Profile updated",
+                  time: "5 days ago",
+                  desc: "Changed shipping address",
+                },
+                {
+                  title: "Order #12344 delivered",
+                  time: "1 week ago",
+                  desc: "Successfully delivered to address",
+                },
+              ].map((activity, index) => (
+                <div key={index} className="list-group-item border-0">
+                  <div className="d-flex justify-content-between align-items-center">
+                    <h6 className="mb-1 fw-bold">{activity.title}</h6>
+                    <small className="text-muted">{activity.time}</small>
+                  </div>
+                  <p className="mb-1 text-muted">{activity.desc}</p>
                 </div>
-                <p className="mb-1">Status: Processing</p>
-              </div>
-              <div className="list-group-item">
-                <div className="d-flex w-100 justify-content-between">
-                  <h6 className="mb-1">Profile updated</h6>
-                  <small className="text-muted">5 days ago</small>
-                </div>
-                <p className="mb-1">Changed shipping address</p>
-              </div>
-              <div className="list-group-item">
-                <div className="d-flex w-100 justify-content-between">
-                  <h6 className="mb-1">Order #12344 delivered</h6>
-                  <small className="text-muted">1 week ago</small>
-                </div>
-                <p className="mb-1">Successfully delivered to address</p>
-              </div>
+              ))}
             </div>
-          </div>
+          </div> */}
         </main>
       </div>
     </div>

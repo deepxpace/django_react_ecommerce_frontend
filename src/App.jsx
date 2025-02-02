@@ -28,6 +28,10 @@ import UserData from "./views/plugin/UserData";
 import apiInstance from "./utils/axios";
 import Account from "./views/customer/Account";
 import Orders from "./views/customer/Orders";
+import OrderDetail from "./views/customer/OrderDetail";
+import Wishlist from "./views/customer/Wishlist";
+import CustomerNotification from "./views/customer/CustomerNotification";
+import CustomerSettings from "./views/customer/CustomerSettings";
 
 function App() {
   const [cartCount, setCartCount] = useState();
@@ -87,6 +91,38 @@ function App() {
               element={
                 <PrivateRoute>
                   <Orders />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/customer/order/:order_oid/"
+              element={
+                <PrivateRoute>
+                  <OrderDetail />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/customer/wishlist/"
+              element={
+                <PrivateRoute>
+                  <Wishlist />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/customer/notifications/"
+              element={
+                <PrivateRoute>
+                  <CustomerNotification />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/customer/settings/"
+              element={
+                <PrivateRoute>
+                  <CustomerSettings />
                 </PrivateRoute>
               }
             />

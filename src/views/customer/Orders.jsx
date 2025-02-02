@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import UserData from "../plugin/UserData";
 import apiInstance from "../../utils/axios";
@@ -261,7 +262,6 @@ function Orders() {
             </div>
 
             {/* Orders Table */}
-            {/* Orders Table */}
             <div className="card">
               <div className="card-header py-3">
                 <h6 className="card-title mb-0">Recent Orders</h6>
@@ -295,7 +295,7 @@ function Orders() {
                       </tr>
                     </thead>
                     <tbody>
-                      {filteredOrders.map((order) => (
+                      {filteredOrders.slice().reverse().map((order) => (
                         <tr key={order.id}>
                           <td className="ps-3">
                             <span className="fw-medium">#{order.oid}</span>
@@ -364,12 +364,13 @@ function Orders() {
                           </td>
                           <td className="text-end pe-3">
                             <div className="fw-medium">${order.total}</div>
-                            <button
+                            <Link
+                              to={`/customer/order/${order.oid}/`}
                               className="btn btn-sm btn-link text-decoration-none p-0 mt-1"
                               style={{ fontSize: "0.875rem" }}
                             >
                               View Details
-                            </button>
+                            </Link>
                           </td>
                         </tr>
                       ))}

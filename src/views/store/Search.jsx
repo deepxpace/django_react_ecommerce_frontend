@@ -31,7 +31,7 @@ function Search() {
   const userData = UserData();
   const cartID = CartID();
 
-  const query = searchParams.get("query");
+  const [query, setQuery] = useState(searchParams.get("query") || "");
 
   const categoryFromUrl = searchParams.get("category");
 
@@ -117,18 +117,13 @@ function Search() {
     setSelectedColors(initialColors);
   }, [products]);
 
+  // Search & Filter States
   const [filters, setFilters] = useState({
-    category: categoryFromUrl || "",
+    category: searchParams.get("category") || "",
     priceRange: { min: "", max: "" },
     sort: "newest",
     inStock: false,
   });
-
-  // useEffect(() => {
-  //   apiInstance.get(`search/?query=${query}`).then((res) => {
-  //     setProducts(res.data);
-  //   });
-  // }, [query]);
 
   useEffect(() => {
     apiInstance.get("category/").then((res) => {
@@ -149,18 +144,19 @@ function Search() {
   // Fetch products with filters
   useEffect(() => {
     const fetchProducts = async () => {
-      const params = new URLSearchParams({
-        ...(query && { query }),
-        ...(categoryFromUrl && { category: categoryFromUrl }), // Tambahkan ini
-        ...(filters.category && { category: filters.category }),
-        ...(filters.priceRange.min && { min_price: filters.priceRange.min }),
-        ...(filters.priceRange.max && { max_price: filters.priceRange.max }),
-        ...(filters.sort !== "newest" && { sort: filters.sort }),
-        ...(filters.inStock && { in_stock: filters.inStock }),
-      });
+      const params = new URLSearchParams();
+
+      if (query) params.set("query", query);
+      if (filters.category) params.set("category", filters.category);
+      if (filters.priceRange.min)
+        params.set("min_price", filters.priceRange.min);
+      if (filters.priceRange.max)
+        params.set("max_price", filters.priceRange.max);
+      if (filters.sort !== "newest") params.set("sort", filters.sort);
+      if (filters.inStock) params.set("in_stock", "true");
 
       try {
-        const res = await apiInstance.get(`search/?${params}`);
+        const res = await apiInstance.get(`search/?${params.toString()}`);
         setProducts(res.data);
       } catch (error) {
         console.error("Error fetching products:", error);
@@ -168,30 +164,39 @@ function Search() {
     };
 
     fetchProducts();
-  }, [query, filters, categoryFromUrl]);
+  }, [query, filters]);
 
   // Modified handleFilterChange to handle category changes
   const handleFilterChange = (filterType, value) => {
-    setFilters((prev) => {
-      const newFilters = {
-        ...prev,
-        [filterType]: value,
-      };
+    setFilters((prev) => ({
+      ...prev,
+      [filterType]: value,
+    }));
 
-      // If category is being changed, update URL params
-      if (filterType === "category") {
-        const params = new URLSearchParams(searchParams);
-        if (value) {
-          params.set("category", value);
-        } else {
-          params.delete("category");
-        }
-        setSearchParams(params);
-      }
-
-      return newFilters;
-    });
+    // Update URL for filters
+    const params = new URLSearchParams(searchParams);
+    if (value) {
+      params.set(filterType, value);
+    } else {
+      params.delete(filterType);
+    }
+    setSearchParams(params);
   };
+
+  useEffect(() => {
+    if (searchParams.get("clear")) {
+      setFilters({
+        category: "",
+        priceRange: { min: "", max: "" },
+        sort: "newest",
+        inStock: false,
+      });
+      setQuery("");
+
+      // Reset URL to clean state without `clear=true`
+      setSearchParams(new URLSearchParams());
+    }
+  }, [searchParams]);
 
   // Modified clearFilters to properly reset everything
   const clearFilters = () => {
@@ -201,13 +206,9 @@ function Search() {
       sort: "newest",
       inStock: false,
     });
+    setQuery("");
 
-    // Clear all params except search query
-    const params = new URLSearchParams();
-    if (query) {
-      params.set("query", query);
-    }
-    setSearchParams(params);
+    setSearchParams(new URLSearchParams());
   };
 
   const resetQuery = async () => {

@@ -183,12 +183,18 @@ const StoreHeader = () => {
                   </li>
 
                   <li>
-                    <Link className="dropdown-item bg-transparent" to={`/customer/orders/`}>
+                    <Link
+                      className="dropdown-item bg-transparent"
+                      to={`/customer/orders/`}
+                    >
                       <i className="fas fa-shopping-cart"></i> Orders
                     </Link>
                   </li>
                   <li>
-                    <Link className="dropdown-item bg-transparent" to={`/customer/wishlist/`}>
+                    <Link
+                      className="dropdown-item bg-transparent"
+                      to={`/customer/wishlist/`}
+                    >
                       <i className="fas fa-heart"></i> Wishlist
                     </Link>
                   </li>
@@ -201,7 +207,10 @@ const StoreHeader = () => {
                     </Link>
                   </li>
                   <li>
-                    <Link className="dropdown-item bg-transparent" to={`/customer/settings/`}>
+                    <Link
+                      className="dropdown-item bg-transparent"
+                      to={`/customer/settings/`}
+                    >
                       <i className="fas fa-gear"></i> Settings
                     </Link>
                   </li>
@@ -226,47 +235,74 @@ const StoreHeader = () => {
                   aria-labelledby="navbarDropdown"
                 >
                   <li>
-                    <Link className="dropdown-item bg-transparent" to="/vendor/dashboard/">
+                    <Link
+                      className="dropdown-item bg-transparent"
+                      to="/vendor/dashboard/"
+                    >
                       <i className="fas fa-user"></i> Dashboard
                     </Link>
                   </li>
                   <li>
-                    <Link className="dropdown-item bg-transparent" to="/vendor/products/">
+                    <Link
+                      className="dropdown-item bg-transparent"
+                      to="/vendor/products/"
+                    >
                       <i className="bi bi-grid-fill"></i> Products
                     </Link>
                   </li>
                   <li>
-                    <Link className="dropdown-item bg-transparent" to="/vendor/product/new/">
+                    <Link
+                      className="dropdown-item bg-transparent"
+                      to="/vendor/product/new/"
+                    >
                       <i className="fas fa-plus-circle"></i> Add Products
                     </Link>
                   </li>
                   <li>
-                    <Link className="dropdown-item bg-transparent" to="/vendor/orders/">
+                    <Link
+                      className="dropdown-item bg-transparent"
+                      to="/vendor/orders/"
+                    >
                       <i className="fas fa-shopping-cart"></i> Orders
                     </Link>
                   </li>
                   <li>
-                    <Link className="dropdown-item bg-transparent" to="/vendor/earning/">
+                    <Link
+                      className="dropdown-item bg-transparent"
+                      to="/vendor/earning/"
+                    >
                       <i className="fas fa-dollar-sign"></i> Earning
                     </Link>
                   </li>
                   <li>
-                    <Link className="dropdown-item bg-transparent" to="/vendor/reviews/">
+                    <Link
+                      className="dropdown-item bg-transparent"
+                      to="/vendor/reviews/"
+                    >
                       <i className="fas fa-star"></i> Reviews
                     </Link>
                   </li>
                   <li>
-                    <Link className="dropdown-item bg-transparent" to="/vendor/coupon/">
+                    <Link
+                      className="dropdown-item bg-transparent"
+                      to="/vendor/coupon/"
+                    >
                       <i className="fas fa-tag"></i> Coupon
                     </Link>
                   </li>
                   <li>
-                    <Link className="dropdown-item bg-transparent" to="/vendor/notifications/">
+                    <Link
+                      className="dropdown-item bg-transparent"
+                      to="/vendor/notifications/"
+                    >
                       <i className="fas fa-bell"></i> Notifications
                     </Link>
                   </li>
                   <li>
-                    <Link className="dropdown-item bg-transparent" to="/vendor/settings/">
+                    <Link
+                      className="dropdown-item bg-transparent"
+                      to="/vendor/settings/"
+                    >
                       <i className="fas fa-gear"></i> Settings
                     </Link>
                   </li>
@@ -314,17 +350,14 @@ const StoreHeader = () => {
               <li key={index} className="nav-item">
                 <Link
                   className="nav-link text-dark px-0"
-                  to={`category/${category.title.toLowerCase()}`}
+                  to={`/search/?category=${category.id}`}
                 >
                   {category.title}
                 </Link>
               </li>
             ))}
 
-            <Link
-              to={`/search/?query=${""}`}
-              className="nav-link text-dark px-0"
-            >
+            <Link to="/search/?clear=true" className="nav-link text-dark px-0">
               All Categories
             </Link>
           </ul>

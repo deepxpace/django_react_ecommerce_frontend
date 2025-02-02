@@ -82,19 +82,23 @@ function Sidebar() {
                       badge: 2,
                     },
                     {
-                      to: "/wishlist",
+                      to: "/customer/wishlist/",
                       icon: "bi-heart",
                       text: "Wishlist",
                       badge: 5,
                     },
-                    { to: "/settings", icon: "bi-gear", text: "Settings" },
                     {
-                      to: "/updates",
+                      to: "/customer/notifications/",
                       icon: "bi-bell",
                       text: "Updates",
                       badge: 3,
                     },
-                    { to: "/profile", icon: "bi-person", text: "Profile" },
+                    {
+                      to: "/customer/settings/",
+                      icon: "bi-gear",
+                      text: "Settings",
+                    },
+                    // { to: "/profile", icon: "bi-person", text: "Profile" },
                     {
                       to: "/help",
                       icon: "bi-question-circle",
