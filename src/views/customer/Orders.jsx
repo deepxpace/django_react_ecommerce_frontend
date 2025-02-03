@@ -369,7 +369,14 @@ function Orders() {
                               className="btn btn-sm btn-link text-decoration-none p-0 mt-1"
                               style={{ fontSize: "0.875rem" }}
                             >
-                              View Details
+                              View Details |
+                            </Link>
+                            <Link
+                              to={`/customer/invoice/${order.oid}/`}
+                              className="btn btn-sm btn-link text-decoration-none p-0 mt-1"
+                              style={{ fontSize: "0.875rem" }}
+                            >
+                              View Invoice
                             </Link>
                           </td>
                         </tr>
