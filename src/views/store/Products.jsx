@@ -213,15 +213,15 @@ function Products() {
                 </p>
               </div>
             </div>
-            <div className="pt-2 row row-cols-2 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 g-3">
+            <div className="pt-2 row row-cols-2 row-cols-md-2 row-cols-lg-3 row-cols-xl-5 g-3">
               {products?.map((p, index) => (
                 <div className="col-lg-3 col-md-6 mb-4" key={index}>
-                  <div className="card border-1 border-light rounded-1 h-100 d-flex flex-column">
+                  <div className="card border rounded h-100 d-flex flex-column">
                     <Link to={`/detail/${p.slug}/`}>
                       <div className="ratio ratio-4x3 position-relative">
                         <img
                           src={p.image}
-                          className="object-fit-cover"
+                          className="object-fit-contain"
                           alt={p.title}
                         />
                       </div>

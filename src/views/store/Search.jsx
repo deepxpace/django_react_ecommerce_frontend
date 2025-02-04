@@ -578,13 +578,13 @@ function Search() {
 
                 <div className="row row-cols-2 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 g-3">
                   {products?.map((p, index) => (
-                    <div className="col-lg-4 col-md-6 mb-4" key={index}>
-                      <div className="card border-1 border-light rounded-1 h-100 d-flex flex-column">
+                    <div className="col-lg-4 col-md-6 mb-2" key={index}>
+                      <div className="card border rounded rounded-1 h-100 d-flex flex-column">
                         <Link to={`/detail/${p.slug}/`}>
                           <div className="ratio ratio-4x3 position-relative">
                             <img
                               src={p.image}
-                              className="object-fit-cover"
+                              className="object-fit-contain"
                               alt={p.title}
                             />
                           </div>

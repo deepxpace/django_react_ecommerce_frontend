@@ -33,6 +33,11 @@ import CustomerNotification from "./views/customer/CustomerNotification";
 import CustomerSettings from "./views/customer/CustomerSettings";
 import Invoice from "./views/customer/Invoice";
 import Dashboard from "./views/vendor/Dashboard";
+import ProductsVendor from "./views/vendor/ProductsVendor";
+import OrdersVendor from "./views/vendor/OrdersVendor";
+import OrderDetailVendor from "./views/vendor/OrderDetailVendor";
+import Earning from "./views/vendor/Earning";
+import Reviews from "./views/vendor/Reviews";
 
 function App() {
   const [cartCount, setCartCount] = useState();
@@ -141,6 +146,46 @@ function App() {
               element={
                 <PrivateRoute>
                   <Dashboard />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/vendor/products/"
+              element={
+                <PrivateRoute>
+                  <ProductsVendor />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/vendor/orders/"
+              element={
+                <PrivateRoute>
+                  <OrdersVendor />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/vendor/orders/:order_oid/"
+              element={
+                <PrivateRoute>
+                  <OrderDetailVendor />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/vendor/earning/"
+              element={
+                <PrivateRoute>
+                  <Earning />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/vendor/reviews/"
+              element={
+                <PrivateRoute>
+                  <Reviews />
                 </PrivateRoute>
               }
             />
