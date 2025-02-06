@@ -86,29 +86,14 @@ function Sidebar() {
                       text: "Reviews",
                     },
                     {
-                      to: "/vendor/faq/",
-                      icon: "bi-question-circle",
-                      text: "FAQs",
-                    },
-                    {
                       to: "/vendor/coupon/",
                       icon: "bi-tags",
                       text: "Coupon and Discount",
                     },
                     {
-                      to: "/vendor/customers/",
-                      icon: "bi-people",
-                      text: "Customers",
-                    },
-                    {
                       to: "/vendor/notifications/",
                       icon: "bi-bell",
                       text: "Notifications",
-                    },
-                    {
-                      to: "/vendor/message/",
-                      icon: "bi-chat-left-text",
-                      text: "Messages",
                     },
                     {
                       to: "/vendor/settings/",

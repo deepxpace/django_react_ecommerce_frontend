@@ -54,18 +54,30 @@ function NotificationVendor() {
         if (!acc[orderId]) {
           acc[orderId] = {
             ...current,
-            orderItems: [], // Array buat nampung produk
+            orderItems: [], // 🔥 Buat nampung semua produk dari vendor ini
+            totalOrderPrice: 0, // 🔥 Total harga semua produk vendor ini dalam order ini
           };
         }
 
-        // 🔥 Hapus Produk Duplikat dalam Satu Order
-        const existingProduct = acc[orderId].orderItems.find(
-          (item) => item.product.pid === current.order_item.product.pid
-        );
+        // 🔥 Ambil SEMUA `order_item` dalam order yang punya vendor ini
+        const vendorProducts = response.data
+          .filter((noti) => noti.order.oid === orderId) // 🔥 Ambil SEMUA notifikasi dalam order ini
+          .map((noti) => noti.order_item) // 🔥 Ambil produk dari notifikasi
+          .filter((item) => item.vendor.id === userData?.vendor_id); // 🔥 Hanya produk dari vendor lo
 
-        if (!existingProduct) {
-          acc[orderId].orderItems.push(current.order_item);
-        }
+        // 🔥 Hapus produk yang double dalam satu order
+        const uniqueProducts = [
+          ...new Map(vendorProducts.map((item) => [item.id, item])).values(),
+        ];
+
+        // 🔥 Update orderItems di notifikasi
+        acc[orderId].orderItems = uniqueProducts;
+
+        // 🔥 Hitung total harga berdasarkan SEMUA produk yang diambil
+        acc[orderId].totalOrderPrice = uniqueProducts.reduce(
+          (sum, item) => sum + parseFloat(item.total),
+          0
+        );
 
         return acc;
       }, {});
@@ -76,19 +88,6 @@ function NotificationVendor() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const markAsSeen = async (notiId) => {
-    await apiInstance
-      .get(`vendor-noti-mark-as-seen/${userData?.vendor_id}/${notiId}/`)
-      .then((res) => {
-        fetchNotifications();
-
-        Toast.fire({
-          icon: "success",
-          title: "Marked as read",
-        });
-      });
   };
 
   useEffect(() => {
@@ -189,16 +188,6 @@ function NotificationVendor() {
   };
 
   const filteredNotifications = filterNotifications();
-
-  const calculateTotalRevenue = (notifications) => {
-    return notifications.reduce((total, notification) => {
-      const orderTotal = notification.orderItems.reduce(
-        (sum, item) => sum + parseFloat(item.total),
-        0
-      );
-      return total + orderTotal;
-    }, 0);
-  };
 
   return (
     <div className="container mt-3">
@@ -416,7 +405,7 @@ function NotificationVendor() {
                     className={`border-bottom p-3 ${!order.seen ? "" : ""}`}
                     style={{ transition: "background-color 0.2s ease" }}
                   >
-                    {/* Order Header */}
+                    {/* 🔥 Order Header */}
                     <div
                       className="d-flex justify-content-between align-items-center"
                       onClick={() => toggleAccordion(order.order.oid)}
@@ -438,18 +427,12 @@ function NotificationVendor() {
                       </div>
                       <div className="d-flex gap-2">
                         <span className="badge bg-success text-center">
-                          $
-                          {order.orderItems
-                            .reduce(
-                              (sum, item) => sum + parseFloat(item.total),
-                              0
-                            )
-                            .toFixed(2)}
+                          ${parseFloat(order.totalOrderPrice).toFixed(2)}
                         </span>
                       </div>
                     </div>
 
-                    {/* Order Details */}
+                    {/* 🔥 Order Details */}
                     <div
                       className={`mt-3 overflow-hidden transition-height`}
                       style={{
@@ -461,7 +444,7 @@ function NotificationVendor() {
                       {expandedOrder === order.order.oid && (
                         <>
                           {order.orderItems.map((item) => (
-                            <div key={item.product.pid} className="row mb-3">
+                            <div key={item.id} className="row mb-3">
                               <div className="col-md-8 d-flex align-items-center">
                                 <img
                                   src={item.product.image}

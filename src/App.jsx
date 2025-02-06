@@ -40,6 +40,8 @@ import Earning from "./views/vendor/Earning";
 import Reviews from "./views/vendor/Reviews";
 import Coupon from "./views/vendor/Coupon";
 import NotificationVendor from "./views/vendor/NotificationVendor";
+import SettingsVendor from "./views/vendor/SettingsVendor";
+import Shop from "./views/vendor/Shop";
 
 function App() {
   const [cartCount, setCartCount] = useState();
@@ -204,6 +206,22 @@ function App() {
               element={
                 <PrivateRoute>
                   <NotificationVendor />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/vendor/settings/"
+              element={
+                <PrivateRoute>
+                  <SettingsVendor />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/vendor/:slug/"
+              element={
+                <PrivateRoute>
+                  <Shop />
                 </PrivateRoute>
               }
             />
