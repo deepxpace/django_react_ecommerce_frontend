@@ -71,6 +71,11 @@ function Sidebar() {
                       text: "Products",
                     },
                     {
+                      to: "/vendor/add-product/",
+                      icon: "bi-bag-plus",
+                      text: "Add Products",
+                    },
+                    {
                       to: "/vendor/orders/",
                       icon: "bi-cart-check",
                       text: "Orders",
