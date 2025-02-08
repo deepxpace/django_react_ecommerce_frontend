@@ -401,13 +401,13 @@ function Dashboard() {
                 </div>
 
                 {/* Filters & Search Bar */}
-                <div className="row align-items-center gy-3">
+                <div className="row align-items-center gy-2">
                   <div className="col-12">
-                    <div className="d-flex flex-wrap gap-3">
+                    <div className="d-flex flex-wrap gap-2">
                       {/* Search Bar */}
                       <div
-                        className="flex-grow-1"
-                        style={{ minWidth: "200px", maxWidth: "100%" }}
+                        className="flex-grow-1 flex-shrink-0"
+                        style={{ minWidth: "150px" }}
                       >
                         <div className="input-group">
                           <span className="input-group-text bg-white border-end-0">
@@ -426,11 +426,11 @@ function Dashboard() {
 
                       {/* Category Filter */}
                       <select
-                        className="form-select"
+                        className="form-select flex-shrink-0"
                         name="category"
                         value={filters.category}
                         onChange={handleFilterChange}
-                        style={{ minWidth: "150px", maxWidth: "100%" }}
+                        style={{ minWidth: "120px", flexBasis: "120px" }}
                       >
                         <option value="">All Categories</option>
                         {categories.map((category) => (
@@ -441,7 +441,7 @@ function Dashboard() {
                       </select>
 
                       {/* Price Range */}
-                      <div className="d-flex align-items-center gap-2 flex-wrap">
+                      <div className="d-flex align-items-center gap-1 flex-nowrap">
                         <input
                           type="number"
                           className="form-control"
@@ -449,7 +449,7 @@ function Dashboard() {
                           name="minPrice"
                           value={filters.minPrice}
                           onChange={handleFilterChange}
-                          style={{ width: "100px", maxWidth: "100%" }}
+                          style={{ width: "80px", maxWidth: "100%" }}
                         />
                         <span className="text-muted">—</span>
                         <input
@@ -459,76 +459,13 @@ function Dashboard() {
                           name="maxPrice"
                           value={filters.maxPrice}
                           onChange={handleFilterChange}
-                          style={{ width: "100px", maxWidth: "100%" }}
+                          style={{ width: "80px", maxWidth: "100%" }}
                         />
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-
-            <div className="d-flex mb-3 gap-2">
-              {/* Stock Filter */}
-              <div className="d-flex gap-2">
-                <input
-                  type="radio"
-                  className="btn-check"
-                  name="inStock"
-                  id="allStock"
-                  value="all"
-                  checked={filters.inStock === "all"}
-                  onChange={handleFilterChange}
-                />
-                <label
-                  className="btn btn-outline-light text-dark  border"
-                  htmlFor="allStock"
-                >
-                  All
-                </label>
-
-                <input
-                  type="radio"
-                  className="btn-check"
-                  name="inStock"
-                  id="inStock"
-                  value="inStock"
-                  checked={filters.inStock === "inStock"}
-                  onChange={handleFilterChange}
-                />
-                <label
-                  className="btn btn-outline-light text-dark border"
-                  htmlFor="inStock"
-                >
-                  In Stock
-                </label>
-
-                <input
-                  type="radio"
-                  className="btn-check"
-                  name="inStock"
-                  id="outStock"
-                  value="outStock"
-                  checked={filters.inStock === "outStock"}
-                  onChange={handleFilterChange}
-                />
-                <label
-                  className="btn btn-outline-light text-dark border"
-                  htmlFor="outStock"
-                >
-                  Out of Stock
-                </label>
-              </div>
-
-              {/* Reset Button */}
-              <button
-                className="btn btn-danger d-flex align-items-center gap-2"
-                onClick={resetFilters}
-                title="Reset Filters"
-              >
-                <i className="bi bi-arrow-counterclockwise"></i>
-                Reset
-              </button>
             </div>
 
             {/* Table Section */}
@@ -544,7 +481,6 @@ function Dashboard() {
                         <th className="px-4 text-center">Orders</th>
                         <th className="px-4 text-center">Stage</th>
                         <th className="px-4 text-center">Stock</th>
-                        <th className=" text-center">Status</th>
                         <th className="text-center px-4">Actions</th>
                       </tr>
                     </thead>
@@ -611,17 +547,7 @@ function Dashboard() {
                                 {product.stock_qty}
                               </span>
                             </td>
-                            <td className="text-center">
-                              <span
-                                className={`badge ${
-                                  product.in_stock
-                                    ? "bg-success-subtle text-success"
-                                    : "bg-danger-subtle text-danger"
-                                } px-3 py-2`}
-                              >
-                                {product.in_stock ? "In Stock" : "Out of Stock"}
-                              </span>
-                            </td>
+
                             <td className="text-end px-4">
                               <div className="btn-group">
                                 <button

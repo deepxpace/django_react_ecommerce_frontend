@@ -2,6 +2,9 @@ import { useState, useEffect, useMemo } from "react";
 import Sidebar from "./Sidebar";
 import apiInstance from "../../utils/axios";
 import UserData from "../plugin/UserData";
+import { Link } from "react-router-dom";
+
+import { Toast, AlertFailed } from "../base/Alert";
 
 function ProductsVendor() {
   const [isSidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -101,6 +104,44 @@ function ProductsVendor() {
     setSearchTerm("");
   };
 
+  const handleDeleteProduct = async (productPid) => {
+    // Show confirmation alert
+    const result = await AlertFailed.fire({
+      icon: "warning",
+      title: "Are you sure you want to delete this product?",
+      showCancelButton: true,
+      confirmButtonText: "Yes, delete it!",
+      cancelButtonText: "Cancel",
+    });
+
+    // If the user confirms, proceed with the deletion
+    if (result.isConfirmed) {
+      try {
+        await apiInstance.delete(
+          `vendor-delete-product/${userData?.vendor_id}/${productPid}/`
+        );
+
+        // Show success toast
+        Toast.fire({
+          icon: "success",
+          title: "Product deleted successfully!",
+        });
+
+        // Refresh product list
+        const res = await apiInstance.get(
+          `vendor/products/${userData?.vendor_id}/`
+        );
+        setProducts(res.data);
+      } catch (error) {
+        // Show error toast
+        Toast.fire({
+          icon: "error",
+          title: "Failed to delete the product!",
+        });
+      }
+    }
+  };
+
   return (
     <div className="container mt-3">
       <div className="row">
@@ -137,13 +178,13 @@ function ProductsVendor() {
                   </div>
 
                   {/* Filters & Search Bar */}
-                  <div className="row align-items-center gy-3">
+                  <div className="row align-items-center gy-2">
                     <div className="col-12">
-                      <div className="d-flex flex-wrap gap-3">
+                      <div className="d-flex flex-wrap gap-2">
                         {/* Search Bar */}
                         <div
-                          className="flex-grow-1"
-                          style={{ minWidth: "200px", maxWidth: "100%" }}
+                          className="flex-grow-1 flex-shrink-0"
+                          style={{ minWidth: "150px" }}
                         >
                           <div className="input-group">
                             <span className="input-group-text bg-white border-end-0">
@@ -162,11 +203,11 @@ function ProductsVendor() {
 
                         {/* Category Filter */}
                         <select
-                          className="form-select"
+                          className="form-select flex-shrink-0"
                           name="category"
                           value={filters.category}
                           onChange={handleFilterChange}
-                          style={{ minWidth: "150px", maxWidth: "100%" }}
+                          style={{ minWidth: "120px", flexBasis: "120px" }}
                         >
                           <option value="">All Categories</option>
                           {categories.map((category) => (
@@ -177,7 +218,7 @@ function ProductsVendor() {
                         </select>
 
                         {/* Price Range */}
-                        <div className="d-flex align-items-center gap-2 flex-wrap">
+                        <div className="d-flex align-items-center gap-1 flex-nowrap">
                           <input
                             type="number"
                             className="form-control"
@@ -185,7 +226,7 @@ function ProductsVendor() {
                             name="minPrice"
                             value={filters.minPrice}
                             onChange={handleFilterChange}
-                            style={{ width: "100px", maxWidth: "100%" }}
+                            style={{ width: "80px", maxWidth: "100%" }}
                           />
                           <span className="text-muted">—</span>
                           <input
@@ -195,76 +236,13 @@ function ProductsVendor() {
                             name="maxPrice"
                             value={filters.maxPrice}
                             onChange={handleFilterChange}
-                            style={{ width: "100px", maxWidth: "100%" }}
+                            style={{ width: "80px", maxWidth: "100%" }}
                           />
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
-
-              <div className="d-flex mb-3 gap-2">
-                {/* Stock Filter */}
-                <div className="d-flex gap-2">
-                  <input
-                    type="radio"
-                    className="btn-check"
-                    name="inStock"
-                    id="allStock"
-                    value="all"
-                    checked={filters.inStock === "all"}
-                    onChange={handleFilterChange}
-                  />
-                  <label
-                    className="btn btn-outline-light text-dark  border"
-                    htmlFor="allStock"
-                  >
-                    All
-                  </label>
-
-                  <input
-                    type="radio"
-                    className="btn-check"
-                    name="inStock"
-                    id="inStock"
-                    value="inStock"
-                    checked={filters.inStock === "inStock"}
-                    onChange={handleFilterChange}
-                  />
-                  <label
-                    className="btn btn-outline-light text-dark border"
-                    htmlFor="inStock"
-                  >
-                    In Stock
-                  </label>
-
-                  <input
-                    type="radio"
-                    className="btn-check"
-                    name="inStock"
-                    id="outStock"
-                    value="outStock"
-                    checked={filters.inStock === "outStock"}
-                    onChange={handleFilterChange}
-                  />
-                  <label
-                    className="btn btn-outline-light text-dark border"
-                    htmlFor="outStock"
-                  >
-                    Out of Stock
-                  </label>
-                </div>
-
-                {/* Reset Button */}
-                <button
-                  className="btn btn-danger d-flex align-items-center gap-2"
-                  onClick={resetFilters}
-                  title="Reset Filters"
-                >
-                  <i className="bi bi-arrow-counterclockwise"></i>
-                  Reset
-                </button>
               </div>
 
               {/* Table Section */}
@@ -280,7 +258,6 @@ function ProductsVendor() {
                           <th className="px-4 text-center">Orders</th>
                           <th className="px-4 text-center">Stage</th>
                           <th className="px-4 text-center">Stock</th>
-                          <th className=" text-center">Status</th>
                           <th className="text-center px-4">Actions</th>
                         </tr>
                       </thead>
@@ -349,35 +326,28 @@ function ProductsVendor() {
                                   {product.stock_qty}
                                 </span>
                               </td>
-                              <td className="text-center">
-                                <span
-                                  className={`badge ${
-                                    product.in_stock
-                                      ? "bg-success-subtle text-success"
-                                      : "bg-danger-subtle text-danger"
-                                  } px-3 py-2`}
-                                >
-                                  {product.in_stock
-                                    ? "In Stock"
-                                    : "Out of Stock"}
-                                </span>
-                              </td>
+
                               <td className="text-end px-4">
                                 <div className="btn-group">
-                                  <button
+                                  <Link
+                                    to={`/detail/${product.slug}/`}
                                     className="btn btn-light btn-sm"
                                     title="View Details"
                                   >
                                     <i className="bi bi-eye"></i>
-                                  </button>
-                                  <button
+                                  </Link>
+                                  <Link
+                                    to={`/vendor/update-product/${product.pid}/`}
                                     className="btn btn-light btn-sm"
                                     title="Edit Product"
                                   >
                                     <i className="bi bi-pencil"></i>
-                                  </button>
+                                  </Link>
                                   <button
                                     className="btn btn-light btn-sm"
+                                    onClick={() =>
+                                      handleDeleteProduct(product.pid)
+                                    }
                                     title="Delete Product"
                                   >
                                     <i className="bi bi-trash"></i>

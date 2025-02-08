@@ -5,9 +5,9 @@ import UserData from "../plugin/UserData";
 import moment from "moment";
 
 import { Toast, AlertFailed } from "../base/Alert";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 
-function AddProduct() {
+function UpdateProduct() {
   const [isSidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   const navigate = useNavigate();
@@ -15,18 +15,9 @@ function AddProduct() {
   const [activeTab, setActiveTab] = useState("details");
 
   const userData = UserData();
+  const param = useParams();
 
-  const [product, setProduct] = useState({
-    title: "",
-    image: null,
-    description: "",
-    category: "",
-    price: "",
-    old_price: "",
-    shipping_amount: "",
-    stock_qty: "",
-    vendor: userData?.vendor_id,
-  });
+  const [product, setProduct] = useState([]);
 
   const [specifications, setSpecifications] = useState([
     {
@@ -139,59 +130,105 @@ function AddProduct() {
     });
   }, []);
 
+  useEffect(() => {
+    apiInstance
+      .get(`vendor-update-product/${userData?.vendor_id}/${param.pid}/`)
+      .then((res) => {
+        setProduct(res.data);
+        setColors(res.data.color);
+        setSizes(res.data.size);
+        setSpecifications(res.data.specification);
+        setGallery(res.data.gallery);
+      });
+  }, []);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     const formData = new FormData();
 
+    // Handle main product image
+    if (product.image) {
+      // Check if it's a new file upload
+      if (product.image.file) {
+        formData.append("image", product.image.file);
+      } else if (typeof product.image === "string") {
+        // If it's an existing image URL, don't append it
+        // The backend will keep the existing image
+      }
+    }
+
+    // Append other product fields
     Object.entries(product).forEach(([key, value]) => {
-      if (key === "image" && value.file) {
-        formData.append(key, value.file);
-      } else {
+      // Skip image as it's handled separately
+      if (key !== "image" && value !== null && value !== undefined) {
         formData.append(key, value);
       }
     });
 
+    // Handle specifications
     specifications.forEach((specification, index) => {
-      Object.entries(specification).forEach(([key, value]) => {
-        formData.append(`specifications[${index}][${key}]`, value);
-      });
+      if (specification.title && specification.content) {
+        formData.append(`specifications[${index}][title]`, specification.title);
+        formData.append(
+          `specifications[${index}][content]`,
+          specification.content
+        );
+      }
     });
 
+    // Handle sizes
     sizes.forEach((size, index) => {
-      Object.entries(size).forEach(([key, value]) => {
-        formData.append(`sizes[${index}][${key}]`, value);
-      });
+      if (size.name && size.price) {
+        formData.append(`sizes[${index}][name]`, size.name);
+        formData.append(`sizes[${index}][price]`, size.price);
+      }
     });
 
+    // Handle colors
     colors.forEach((color, index) => {
-      Object.entries(color).forEach(([key, value]) => {
-        formData.append(`colors[${index}][${key}]`, value);
-      });
+      if (color.name && color.color_code) {
+        formData.append(`colors[${index}][name]`, color.name);
+        formData.append(`colors[${index}][color_code]`, color.color_code);
+      }
     });
 
+    // Handle gallery images
     gallery.forEach((item, index) => {
       if (item.image) {
-        formData.append(`gallery[${index}][image]`, item.image.file);
+        // Check if it's a new file upload
+        if (item.image.file) {
+          formData.append(`gallery[${index}][image]`, item.image.file);
+        } else if (typeof item.image === "string") {
+          // If it's an existing image URL, don't append it
+          // The backend will keep the existing image
+        }
       }
     });
 
-    const response = await apiInstance.post(
-      `vendor-create-product/`,
-      formData,
-      {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      }
-    );
+    try {
+      const response = await apiInstance.patch(
+        `vendor-update-product/${userData?.vendor_id}/${param.pid}/`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
 
-    Toast.fire({
-      icon: "success",
-      title: "Product created successfully",
-    });
+      Toast.fire({
+        icon: "success",
+        title: "Product updated successfully",
+      });
 
-    navigate("/vendor/products/");
+      navigate("/vendor/products/");
+    } catch (error) {
+      Toast.fire({
+        icon: "error",
+        title: error.response?.data?.image?.[0] || "Error updating product",
+      });
+    }
   };
 
   return (
@@ -286,7 +323,11 @@ function AddProduct() {
             </div>
           </div>
 
-          <form className="form-group" onSubmit={handleSubmit}>
+          <form
+            className="form-group"
+            onSubmit={handleSubmit}
+            encType="multipart/form-data"
+          >
             <div className="">
               <div className="row justify-content-center">
                 <div className="">
@@ -507,18 +548,30 @@ function AddProduct() {
                                     style={{ paddingTop: "100%" }}
                                   >
                                     <div className="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center bg-light">
-                                      {/* Check if item.image exists */}
-                                      {item.image ? (
-                                        <img
-                                          style={{
-                                            objectFit: "contain",
-                                            width: "100%",
-                                            height: "100%",
-                                          }}
-                                          src={item.image.preview}
-                                          alt="preview"
-                                        />
-                                      ) : (
+                                      {item.image &&
+                                        (item.image.preview ? (
+                                          <img
+                                            style={{
+                                              objectFit: "contain",
+                                              width: "100%",
+                                              height: "100%",
+                                            }}
+                                            src={item.image.preview}
+                                            alt="preview"
+                                          />
+                                        ) : (
+                                          <img
+                                            style={{
+                                              objectFit: "contain",
+                                              width: "100%",
+                                              height: "100%",
+                                            }}
+                                            src={item.image}
+                                            alt="preview"
+                                          />
+                                        ))}
+
+                                      {!item.image && (
                                         <i
                                           className="bi bi-image text-secondary"
                                           style={{ fontSize: "2rem" }}
@@ -794,7 +847,7 @@ function AddProduct() {
 
             <div className="d-grid gap-2 col-12 col-md-6 w-100 mt-4">
               <button type="submit" className="btn btn-warning btn-lg">
-                <i className="bi bi-check-circle me-2"></i>Create Product
+                <i className="bi bi-check-circle me-2"></i>Update Product
               </button>
             </div>
           </form>
@@ -804,4 +857,4 @@ function AddProduct() {
   );
 }
 
-export default AddProduct;
+export default UpdateProduct;

@@ -43,6 +43,7 @@ import NotificationVendor from "./views/vendor/NotificationVendor";
 import SettingsVendor from "./views/vendor/SettingsVendor";
 import Shop from "./views/vendor/Shop";
 import AddProduct from "./views/vendor/AddProduct";
+import UpdateProduct from "./views/vendor/UpdateProduct";
 
 function App() {
   const [cartCount, setCartCount] = useState();
@@ -231,6 +232,14 @@ function App() {
               element={
                 <PrivateRoute>
                   <AddProduct />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/vendor/update-product/:pid/"
+              element={
+                <PrivateRoute>
+                  <UpdateProduct />
                 </PrivateRoute>
               }
             />

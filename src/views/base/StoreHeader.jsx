@@ -253,7 +253,7 @@ const StoreHeader = () => {
                   <li>
                     <Link
                       className="dropdown-item bg-transparent"
-                      to="/vendor/product/new/"
+                      to="/vendor/add-product/"
                     >
                       <i className="fas fa-plus-circle"></i> Add Products
                     </Link>
