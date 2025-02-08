@@ -115,8 +115,6 @@ const Shop = () => {
             return parseFloat(b.price) - parseFloat(a.price);
           case "rating":
             return (b.product_rating || 0) - (a.product_rating || 0);
-          case "popularity":
-            return b.views - a.views;
           case "orders":
             return b.orders - a.orders;
           case "oldest":
@@ -195,7 +193,7 @@ const Shop = () => {
                 />
               </div>
               <div className="col-lg-6">
-                <h2 className="fw-bold mb-3">{shop?.name}</h2>
+                <h2 className="fw-bold text-dark mb-3">{shop?.name}</h2>
                 <p className="text-muted mb-4">{shop?.description}</p>
                 <div className="d-flex flex-wrap gap-4 mb-3">
                   <div className="d-flex align-items-center">
@@ -288,7 +286,6 @@ const Shop = () => {
                   <option value="price-asc">Price: Low to High</option>
                   <option value="price-desc">Price: High to Low</option>
                   <option value="rating">Best Rating</option>
-                  <option value="popularity">Most Popular</option>
                   <option value="orders">Most Orders</option>
                 </select>
               </div>
@@ -609,10 +606,7 @@ const Shop = () => {
                           <i className="bi bi-cart-check me-1"></i>
                           <span>{product.orders} orders</span>
                         </div>
-                        <div className="d-flex align-items-center">
-                          <i className="bi bi-eye me-1"></i>
-                          <span>{product.views} views</span>
-                        </div>
+                        
                       </div>
                     </div>
                     <div className="card-footer bg-white p-4 border-top-0">
@@ -696,10 +690,7 @@ const Shop = () => {
                               <i className="bi bi-cart-check me-2"></i>
                               <span>{product.orders} Orders</span>
                             </div>
-                            <div className="d-flex align-items-center">
-                              <i className="bi bi-eye me-2"></i>
-                              <span>{product.views} Views</span>
-                            </div>
+                            
                           </div>
                           <Link
                             to={`/detail/${product.slug}`}
@@ -725,7 +716,7 @@ const Shop = () => {
             <ul className="pagination justify-content-center">
               <li
                 className={`page-item ${currentPage === 1 ? "disabled" : ""}`}
-                style={{ backgroundColor: currentPage === 1 ? "#343a40" : "" }} // bg-dark ketika disabled
+                style={{ backgroundColor: currentPage === 1 ? "#343a40" : "" }} 
               >
                 <button
                   className="page-link"
@@ -735,7 +726,7 @@ const Shop = () => {
                     color: "white",
                     backgroundColor: "#343a40",
                     border: "none",
-                  }} // bg-dark untuk tombol
+                  }} 
                 >
                   <i className="bi bi-chevron-left"></i>
                 </button>
@@ -770,7 +761,7 @@ const Shop = () => {
                 }`}
                 style={{
                   backgroundColor: currentPage === totalPages ? "#343a40" : "",
-                }} // bg-dark saat disabled
+                }} 
               >
                 <button
                   className="page-link"
@@ -780,7 +771,7 @@ const Shop = () => {
                     color: "white",
                     backgroundColor: "#343a40",
                     border: "none",
-                  }} // bg-dark untuk tombol
+                  }} 
                 >
                   <i className="bi bi-chevron-right"></i>
                 </button>

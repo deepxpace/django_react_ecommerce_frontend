@@ -47,33 +47,29 @@ function NotificationVendor() {
         `vendor-noti-list/${userData?.vendor_id}/`
       );
 
-      // 🔥 Grouping Notifikasi Berdasarkan Order ID
       const groupedNotifications = response.data.reduce((acc, current) => {
         const orderId = current.order.oid;
 
         if (!acc[orderId]) {
           acc[orderId] = {
             ...current,
-            orderItems: [], // 🔥 Buat nampung semua produk dari vendor ini
-            totalOrderPrice: 0, // 🔥 Total harga semua produk vendor ini dalam order ini
+            orderItems: [], 
+            totalOrderPrice: 0,i
           };
         }
 
-        // 🔥 Ambil SEMUA `order_item` dalam order yang punya vendor ini
         const vendorProducts = response.data
-          .filter((noti) => noti.order.oid === orderId) // 🔥 Ambil SEMUA notifikasi dalam order ini
-          .map((noti) => noti.order_item) // 🔥 Ambil produk dari notifikasi
-          .filter((item) => item.vendor.id === userData?.vendor_id); // 🔥 Hanya produk dari vendor lo
+          .filter((noti) => noti.order.oid === orderId) 
+          .map((noti) => noti.order_item) 
+          .filter((item) => item.vendor.id === userData?.vendor_id); 
 
-        // 🔥 Hapus produk yang double dalam satu order
+        
         const uniqueProducts = [
           ...new Map(vendorProducts.map((item) => [item.id, item])).values(),
         ];
 
-        // 🔥 Update orderItems di notifikasi
         acc[orderId].orderItems = uniqueProducts;
 
-        // 🔥 Hitung total harga berdasarkan SEMUA produk yang diambil
         acc[orderId].totalOrderPrice = uniqueProducts.reduce(
           (sum, item) => sum + parseFloat(item.total),
           0

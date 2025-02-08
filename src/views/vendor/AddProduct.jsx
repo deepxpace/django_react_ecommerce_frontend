@@ -659,7 +659,7 @@ function AddProduct() {
                               <div className="col-md-5">
                                 <input
                                   type="text"
-                                  className="form-control"
+                                  className="form-control mb-4"
                                   placeholder="Variations (e.g., XL, 32Gb RAM, Long Sleeves)"
                                   value={s.name || ""}
                                   onChange={(e) =>

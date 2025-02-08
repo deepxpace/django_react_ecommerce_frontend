@@ -179,9 +179,8 @@ function Cart() {
   }, [cart]);
 
   useEffect(() => {
-    // Membuat debounce timer untuk menghindari terlalu banyak request
+
     const debounceTimer = setTimeout(async () => {
-      // Cek jika ada perubahan quantity
       const hasQuantityChanged = cart.some(
         (item) => productQuantities[item.product?.id] !== item.qty
       );
@@ -190,7 +189,6 @@ function Cart() {
         setIsUpdating(true);
 
         try {
-          // Update semua item yang quantitynya berubah
           await Promise.all(
             cart.map(async (item) => {
               const newQty = productQuantities[item.product?.id];

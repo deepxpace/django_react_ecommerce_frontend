@@ -321,7 +321,7 @@ function OrdersVendor() {
                             </td>
                             <td className="px-4">
                               <div className="fw-medium">{order.full_name}</div>
-                              <div className="small text-muted">
+                              <div className="small text-muted text-truncated">
                                 {order.email}
                               </div>
                             </td>

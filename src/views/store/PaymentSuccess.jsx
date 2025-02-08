@@ -77,8 +77,6 @@ const PaymentSuccess = () => {
     return details;
   };
 
-  // Effect untuk fetch order data
-  // Effect untuk fetch order data
   useEffect(() => {
     const fetchOrderData = async () => {
       try {
@@ -97,7 +95,6 @@ const PaymentSuccess = () => {
     }
   }, [param.order_oid]);
 
-  // Effect untuk verifikasi pembayaran
   useEffect(() => {
     const verifyPayment = async () => {
       if (!param.order_oid) {
@@ -131,11 +128,10 @@ const PaymentSuccess = () => {
       }
     };
 
-    // Hanya jalankan verifikasi jika ada paypal_order_id atau sessionId
     if (paypal_order_id || sessionId) {
       verifyPayment();
     }
-  }, [param.order_oid, sessionId, paypal_order_id]); // Gunakan param.order_oid sebagai dependency // Tambahkan paypal_order_id ke dependencies
+  }, [param.order_oid, sessionId, paypal_order_id]); 
 
   const getProgressWidth = () => {
     return "100%";

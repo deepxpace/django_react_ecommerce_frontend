@@ -208,13 +208,14 @@ function Products() {
               <div className="col-lg-6 col-md-8 mx-auto">
                 <h1 className="fw-light">Featured Products</h1>
                 <p className="lead text-muted">
-                  Something short and leading about the collection below—its
-                  contents
+                  Explore our handpicked featured products below—each selected
+                  for its quality and appeal. Find your next favorite item
+                  today!
                 </p>
               </div>
             </div>
             <div className="pt-2 row row-cols-2 row-cols-md-2 row-cols-lg-3 row-cols-xl-5 g-3">
-              {products?.map((p, index) => (
+              {products?.slice(0, 5).map((p, index) => (
                 <div className="col-lg-3 col-md-6 mb-4" key={index}>
                   <div className="card border rounded h-100 d-flex flex-column">
                     <Link to={`/detail/${p.slug}/`}>
@@ -464,6 +465,241 @@ function Products() {
                   <h6>{c.title}</h6>
                 </div>
               ))}
+            </div>
+
+            <div className="pt-2 row row-cols-2 row-cols-md-2 row-cols-lg-3 row-cols-xl-5 g-3 mt-5">
+              {products
+                ?.sort(() => Math.random() - 0.5)
+                .map((p, index) => (
+                  <div className="col-lg-3 col-md-6 mb-4" key={index}>
+                    <div className="card border rounded h-100 d-flex flex-column">
+                      <Link to={`/detail/${p.slug}/`}>
+                        <div className="ratio ratio-4x3 position-relative">
+                          <img
+                            src={p.image}
+                            className="object-fit-contain"
+                            alt={p.title}
+                          />
+                        </div>
+                      </Link>
+                      <div className="card-body d-flex flex-column">
+                        <Link
+                          className="text-decoration-none"
+                          to={`/detail/${p.slug}/`}
+                        >
+                          <h5
+                            className="card-title mb-3 text-dark"
+                            style={{
+                              display: "-webkit-box",
+                              WebkitLineClamp: 2,
+                              WebkitBoxOrient: "vertical",
+                              overflow: "hidden",
+                            }}
+                          >
+                            {p.title}
+                          </h5>
+                        </Link>
+                        <a href="" className="text-reset">
+                          <p>{p.category?.title}</p>
+                        </a>
+                        <h6 className="mb-3 mt-auto">
+                          {/* <s>${p.old_price}</s> */}
+                          <strong className="text-dark">
+                            ${p.price}
+                          </strong>
+                        </h6>
+                        <div className="mt-auto">
+                          {/* Variations Dropdown */}
+                          <div className="btn-group">
+                            {p.size?.length > 0 || p.color?.length > 0 ? (
+                              <>
+                                <div className="d-flex">
+                                  <button
+                                    className="btn btn-warning dropdown-toggle flex-grow-1 d-flex"
+                                    type="button"
+                                    id="dropdownMenuClickable"
+                                    data-bs-toggle="dropdown"
+                                    data-bs-auto-close="outside"
+                                    aria-expanded="false"
+                                    style={{
+                                      alignItems: "center",
+                                      justifyContent: "space-between",
+                                      width: "100%",
+                                    }}
+                                  >
+                                    <span className="me-1">Select</span>
+                                  </button>
+                                  <ul
+                                    className="dropdown-menu p-3"
+                                    aria-labelledby="dropdownMenuClickable"
+                                    style={{
+                                      width: "280px",
+                                    }}
+                                  >
+                                    {/* Quantity Section */}
+                                    <div className="mb-3">
+                                      <label className="form-label">
+                                        <b>Quantity</b>
+                                      </label>
+                                      <input
+                                        className="form-control"
+                                        min={1}
+                                        type="number"
+                                        placeholder="1"
+                                        onChange={(e) =>
+                                          handleQtyChange(e, p.id)
+                                        }
+                                      />
+                                    </div>
+
+                                    {/* Variations or Size Options Section */}
+                                    {p.size?.length > 0 && (
+                                      <div className="mb-3">
+                                        <label className="form-label">
+                                          <b>Variation: </b>
+                                          {selectedSizes[p.id] || "Select one"}
+                                        </label>
+                                        <div className="d-flex flex-wrap gap-2">
+                                          {p.size?.map((size, index) => (
+                                            <button
+                                              key={index}
+                                              className={`btn btn-sm ${
+                                                selectedSizes[p.id] ===
+                                                size.name
+                                                  ? "btn-warning"
+                                                  : "btn-outline-secondary"
+                                              }`}
+                                              onClick={() => {
+                                                handleSizeButton(
+                                                  p.id,
+                                                  size.name
+                                                );
+                                              }}
+                                            >
+                                              {size.name}
+                                            </button>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    )}
+
+                                    {/* Color Options Section */}
+                                    {p.color?.length > 0 && (
+                                      <div className="mb-3">
+                                        <label className="form-label">
+                                          <b>Color: </b>
+                                          {selectedColors[p.id] ||
+                                            "Select one"}{" "}
+                                        </label>
+                                        <div className="d-flex flex-wrap gap-2">
+                                          {p.color?.map((color, index) => (
+                                            <button
+                                              key={index}
+                                              className={`btn rounded-circle border p-0 ${
+                                                selectedColors[p.id] ===
+                                                color.name
+                                                  ? "border-warning border-3"
+                                                  : ""
+                                              }`}
+                                              style={{
+                                                width: "30px",
+                                                height: "30px",
+                                                backgroundColor:
+                                                  color.color_code,
+                                              }}
+                                              onClick={() =>
+                                                handleColorButton(
+                                                  p.id,
+                                                  color.name
+                                                )
+                                              }
+                                            />
+                                          ))}
+                                        </div>
+                                      </div>
+                                    )}
+
+                                    {/* Action Buttons */}
+                                    <div className="d-flex mt-3">
+                                      <button
+                                        type="button"
+                                        className="btn btn-warning flex-grow-1 me-2"
+                                        onClick={() =>
+                                          handleAddToCart(
+                                            p.id,
+                                            p.price,
+                                            p.shipping_amount,
+                                            true,
+                                            p
+                                          )
+                                        }
+                                      >
+                                        <i className="fas fa-shopping-cart me-2" />
+                                        Add to Cart
+                                      </button>
+                                      <button
+                                        onClick={() =>
+                                          addToWishlist(p.id, userData?.user_id)
+                                        }
+                                        type="button"
+                                        className="btn btn-dark px-3"
+                                      >
+                                        <i className="fas fa-heart" />
+                                      </button>
+                                    </div>
+                                  </ul>
+                                  <button
+                                    onClick={() =>
+                                      addToWishlist(p.id, userData?.user_id)
+                                    }
+                                    type="button"
+                                    className="btn btn-dark px-3 ms-2"
+                                  >
+                                    <i className="fas fa-heart" />
+                                  </button>
+                                </div>
+                              </>
+                            ) : (
+                              <>
+                                {/* If there's no variations on the product 
+                                    Show add to cart button instead */}
+                                <div className="d-flex">
+                                  <button
+                                    type="button"
+                                    className="btn btn-warning flex-grow-1 me-2"
+                                    onClick={() =>
+                                      handleAddToCart(
+                                        p.id,
+                                        p.price,
+                                        p.shipping_amount,
+                                        false,
+                                        p
+                                      )
+                                    }
+                                  >
+                                    <i className="fas fa-shopping-cart me-2" />
+                                    <span className="d-none d-sm-inline">
+                                      Add to Cart
+                                    </span>
+                                  </button>
+                                  <button
+                                    onClick={() =>
+                                      addToWishlist(p.id, userData?.user_id)
+                                    }
+                                    type="button"
+                                    className="btn btn-dark px-3"
+                                  >
+                                    <i className="fas fa-heart" />
+                                  </button>
+                                </div>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
             </div>
           </section>
         </div>
