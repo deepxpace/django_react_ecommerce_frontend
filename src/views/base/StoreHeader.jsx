@@ -4,6 +4,9 @@ import { Link, useNavigate } from "react-router-dom";
 import apiInstance from "../../utils/axios";
 import { useAuthStore } from "../../store/auth";
 import { CartContext } from "../plugin/Context";
+import UserData from "../plugin/UserData";
+import CartID from "../plugin/CartID";
+import { getImageUrl } from "../../utils/imageUtils";
 
 const StoreHeader = () => {
   const [categories, setCategories] = useState([]);
@@ -33,28 +36,28 @@ const StoreHeader = () => {
   return (
     <>
       {/* Top bar */}
-      <div className="bg-dark text-white py-2 d-none d-lg-block">
+      <div className="bg-light text-dark py-2 d-none d-lg-block">
         <div className="container">
           <div className="row align-items-center">
             <div className="col-md-6">
               <div className="d-flex gap-3">
                 <a
                   href="#"
-                  className="text-white-50 text-decoration-none small"
+                  className="text-dark-50 text-decoration-none small"
                 >
                   <i className="fas fa-phone-alt me-1"></i> +1 234 5678
                 </a>
                 <a
                   href="#"
-                  className="text-white-50 text-decoration-none small"
+                  className="text-dark-50 text-decoration-none small"
                 >
-                  <i className="fas fa-envelope me-1"></i> support@upfront.com
+                  <i className="fas fa-envelope me-1"></i> support@koshimart.com
                 </a>
                 <a
                   href="#"
-                  className="text-white-50 text-decoration-none small"
+                  className="text-dark-50 text-decoration-none small"
                 >
-                  <i className="fas fa-map-marker-alt me-1"></i> Upfront
+                  <i className="fas fa-map-marker-alt me-1"></i> Koshimart
                   Headquarters
                 </a>
               </div>
@@ -63,13 +66,13 @@ const StoreHeader = () => {
               <div className="d-flex justify-content-end gap-3">
                 <Link
                   to="/track-order"
-                  className="text-white-50 text-decoration-none small"
+                  className="text-dark-50 text-decoration-none small"
                 >
                   Track Order
                 </Link>
                 <Link
                   to="/shipping-policy"
-                  className="text-white-50 text-decoration-none small"
+                  className="text-dark-50 text-decoration-none small"
                 >
                   Shipping Policy
                 </Link>
@@ -80,17 +83,17 @@ const StoreHeader = () => {
       </div>
 
       {/* Main Navbar */}
-      <nav className="navbar navbar-expand-lg navbar-dark bg-dark sticky-top py-3">
+      <nav className="navbar navbar-expand-lg navbar-light bg-white sticky-top py-3 shadow-sm">
         <div className="container">
           {/* Logo */}
           <Link className="navbar-brand d-flex align-items-center" to="/">
             <img
               height={40}
               width={40}
-              src="https://img.icons8.com/?size=100&id=66760&format=png&color=D57907"
-              alt="Upfront Logo"
+              src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Eo_circle_orange_letter-k.svg/1200px-Eo_circle_orange_letter-k.svg.png"
+              alt="Koshimart Logo"
             />
-            <span className="ms-2 fw-bold">Upfront</span>
+            <span className="ms-2 fw-bold" style={{ color: "#ff8c00" }}>Koshimart</span>
           </Link>
 
           {/* Search Bar - Desktop */}
@@ -115,7 +118,8 @@ const StoreHeader = () => {
               />
               <button
                 onClick={handleSearchSubmit}
-                className="btn btn-warning"
+                className="btn"
+                style={{ backgroundColor: "#ff8c00", color: "white" }}
                 type="button"
               >
                 <i className="fas fa-search"></i>
@@ -125,7 +129,7 @@ const StoreHeader = () => {
 
           {/* Mobile Toggle */}
           <button
-            className="navbar-toggler"
+            className="navbar-toggler border-dark"
             type="button"
             data-bs-toggle="collapse"
             data-bs-target="#navbarContent"
@@ -146,7 +150,8 @@ const StoreHeader = () => {
                 />
                 <button
                   onClick={handleSearchSubmit}
-                  className="btn btn-warning"
+                  className="btn"
+                  style={{ backgroundColor: "#ff8c00", color: "white" }}
                   type="button"
                 >
                   <i className="fas fa-search"></i>
@@ -159,7 +164,7 @@ const StoreHeader = () => {
               {/* Account Dropdown */}
               <li className="nav-item dropdown">
                 <Link
-                  className="nav-link dropdown-toggle"
+                  className="nav-link dropdown-toggle text-dark"
                   to={"/customer/account/"}
                   id="navbarDropdown"
                   role="button"
@@ -176,7 +181,7 @@ const StoreHeader = () => {
                   <li>
                     <Link
                       to={"/customer/account/"}
-                      className="dropdown-item bg-transparent"
+                      className="dropdown-item bg-transparent text-dark"
                     >
                       <i className="fas fa-user"></i> Account
                     </Link>
@@ -184,7 +189,7 @@ const StoreHeader = () => {
 
                   <li>
                     <Link
-                      className="dropdown-item bg-transparent"
+                      className="dropdown-item bg-transparent text-dark"
                       to={`/customer/orders/`}
                     >
                       <i className="fas fa-shopping-cart"></i> Orders
@@ -192,7 +197,7 @@ const StoreHeader = () => {
                   </li>
                   <li>
                     <Link
-                      className="dropdown-item bg-transparent"
+                      className="dropdown-item bg-transparent text-dark"
                       to={`/customer/wishlist/`}
                     >
                       <i className="fas fa-heart"></i> Wishlist
@@ -200,7 +205,7 @@ const StoreHeader = () => {
                   </li>
                   <li>
                     <Link
-                      className="dropdown-item bg-transparent"
+                      className="dropdown-item bg-transparent text-dark"
                       to={`/customer/notifications/`}
                     >
                       <i className="fas fa-bell"></i> Notifications
@@ -208,7 +213,7 @@ const StoreHeader = () => {
                   </li>
                   <li>
                     <Link
-                      className="dropdown-item bg-transparent"
+                      className="dropdown-item bg-transparent text-dark"
                       to={`/customer/settings/`}
                     >
                       <i className="fas fa-gear"></i> Settings
@@ -220,7 +225,7 @@ const StoreHeader = () => {
               {/* Vendor Dropdown */}
               <li className="nav-item dropdown">
                 <a
-                  className="nav-link dropdown-toggle"
+                  className="nav-link dropdown-toggle text-dark"
                   href="#"
                   id="navbarDropdown"
                   role="button"
@@ -236,7 +241,7 @@ const StoreHeader = () => {
                 >
                   <li>
                     <Link
-                      className="dropdown-item bg-transparent"
+                      className="dropdown-item bg-transparent text-dark"
                       to="/vendor/dashboard/"
                     >
                       <i className="fas fa-user"></i> Dashboard
@@ -244,7 +249,7 @@ const StoreHeader = () => {
                   </li>
                   <li>
                     <Link
-                      className="dropdown-item bg-transparent"
+                      className="dropdown-item bg-transparent text-dark"
                       to="/vendor/products/"
                     >
                       <i className="bi bi-grid-fill"></i> Products
@@ -252,7 +257,7 @@ const StoreHeader = () => {
                   </li>
                   <li>
                     <Link
-                      className="dropdown-item bg-transparent"
+                      className="dropdown-item bg-transparent text-dark"
                       to="/vendor/add-product/"
                     >
                       <i className="fas fa-plus-circle"></i> Add Products
@@ -260,7 +265,7 @@ const StoreHeader = () => {
                   </li>
                   <li>
                     <Link
-                      className="dropdown-item bg-transparent"
+                      className="dropdown-item bg-transparent text-dark"
                       to="/vendor/orders/"
                     >
                       <i className="fas fa-shopping-cart"></i> Orders
@@ -268,7 +273,7 @@ const StoreHeader = () => {
                   </li>
                   <li>
                     <Link
-                      className="dropdown-item bg-transparent"
+                      className="dropdown-item bg-transparent text-dark"
                       to="/vendor/earning/"
                     >
                       <i className="fas fa-dollar-sign"></i> Earning
@@ -276,7 +281,7 @@ const StoreHeader = () => {
                   </li>
                   <li>
                     <Link
-                      className="dropdown-item bg-transparent"
+                      className="dropdown-item bg-transparent text-dark"
                       to="/vendor/reviews/"
                     >
                       <i className="fas fa-star"></i> Reviews
@@ -284,7 +289,7 @@ const StoreHeader = () => {
                   </li>
                   <li>
                     <Link
-                      className="dropdown-item bg-transparent"
+                      className="dropdown-item bg-transparent text-dark"
                       to="/vendor/coupon/"
                     >
                       <i className="fas fa-tag"></i> Coupon
@@ -292,7 +297,7 @@ const StoreHeader = () => {
                   </li>
                   <li>
                     <Link
-                      className="dropdown-item bg-transparent"
+                      className="dropdown-item bg-transparent text-dark"
                       to="/vendor/notifications/"
                     >
                       <i className="fas fa-bell"></i> Notifications
@@ -300,7 +305,7 @@ const StoreHeader = () => {
                   </li>
                   <li>
                     <Link
-                      className="dropdown-item bg-transparent"
+                      className="dropdown-item bg-transparent text-dark"
                       to="/vendor/settings/"
                     >
                       <i className="fas fa-gear"></i> Settings
@@ -314,10 +319,10 @@ const StoreHeader = () => {
                 <div className="d-flex gap-2 mt-4 mt-md-0">
                   {!isLoggedIn ? (
                     <>
-                      <Link className="btn btn-outline-light me-2" to="/login">
+                      <Link className="btn btn-outline-dark me-2" to="/login">
                         Login
                       </Link>
-                      <Link className="btn btn-warning me-2" to="/register">
+                      <Link className="btn me-2" style={{ backgroundColor: "#ff8c00", color: "white" }} to="/register">
                         Register
                       </Link>
                     </>
@@ -327,7 +332,8 @@ const StoreHeader = () => {
                     </Link>
                   )}
                   <Link
-                    className="btn btn-warning position-relative"
+                    className="btn position-relative"
+                    style={{ backgroundColor: "#ff8c00", color: "white" }}
                     to="/cart/"
                   >
                     <i className="fas fa-shopping-cart"></i>

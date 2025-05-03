@@ -6,6 +6,7 @@ import GetCurrentAddress from "../plugin/UserCountry";
 import UserData from "../plugin/UserData";
 import CartID from "../plugin/CartID";
 import { CartContext } from "../plugin/Context";
+import { getImageUrl } from "../../utils/imageUtils";
 
 import { Toast, AlertFailed } from "../base/Alert";
 
@@ -78,7 +79,7 @@ function Products() {
       }
 
       formData.append("product_id", productId);
-      formData.append("user_id", userData?.user_id);
+      formData.append("user_id", userData?.user_id || null);
       formData.append("qty", qty);
       formData.append("price", price);
       formData.append("shipping_amount", shippingAmount);
@@ -89,9 +90,13 @@ function Products() {
 
       const response = await apiInstance.post("cart-view/", formData);
 
-      const url = userData
-        ? `cart-list/${cartID}/${userData?.user_id}/`
-        : `cart-list/${cartID}/`;
+      // Choose the correct URL based on user state
+      let url;
+      if (userData?.user_id) {
+        url = `cart-list/${cartID}/${userData.user_id}/`;
+      } else {
+        url = `cart-list/${cartID}/`;
+      }
 
       await apiInstance.get(url).then((res) => {
         setCartCount(res.data.length);
@@ -103,10 +108,18 @@ function Products() {
         title: response.data.message,
       });
     } catch (error) {
-      AlertFailed.fire({
-        icon: "error",
-        title: "Failed to add to cart. Please try again",
-      });
+      console.error("Cart error:", error);
+      if (!userData?.user_id) {
+        AlertFailed.fire({
+          icon: "info",
+          title: "Sign in to save your cart between sessions",
+        });
+      } else {
+        AlertFailed.fire({
+          icon: "error",
+          title: "Failed to add to cart. Please try again",
+        });
+      }
     }
   };
 
@@ -168,39 +181,68 @@ function Products() {
   return (
     <div>
       <main className="mt-3">
-        <div className="container">
-          <div className="container px-4 py-3">
-            <div className="row flex-lg-row-reverse align-items-center g-5">
-              <div className="col-10 col-sm-8 col-lg-6">
-                <img
-                  src="https://www.moradaseniorliving.com/wp-content/uploads/2022/05/a-guide-to-safe-online-shopping-in-your-senior-years.jpg"
-                  className="rounded-1 d-block mx-lg-auto img-fluid"
-                  width="700"
-                  height="500"
-                  loading="lazy"
-                />
+        {/* Full-width Banner Section */}
+        <div className="container-fluid px-0 mb-4">
+          <div id="bannerCarousel" className="carousel slide" data-bs-ride="carousel">
+            <div className="carousel-indicators">
+              <button type="button" data-bs-target="#bannerCarousel" data-bs-slide-to="0" className="active" aria-current="true" aria-label="Slide 1"></button>
+              <button type="button" data-bs-target="#bannerCarousel" data-bs-slide-to="1" aria-label="Slide 2"></button>
+              <button type="button" data-bs-target="#bannerCarousel" data-bs-slide-to="2" aria-label="Slide 3"></button>
+            </div>
+            <div className="carousel-inner">
+              <div className="carousel-item active">
+                <div className="banner-container" style={{ position: "relative", paddingTop: "40%" }}>
+                  <img 
+                    src="https://images-eu.ssl-images-amazon.com/images/G/31/IN-Events/Shankhadip/MayART25/MAY25_GW_PC_Hero_H1_Sale-is-live_2X._CB795056097_.jpg" 
+                    className="position-absolute top-0 start-0 w-100 h-100"
+                    alt="Sale Banner 1"
+                    style={{ objectFit: "cover" }}
+                  />
+                </div>
               </div>
-              <div className="col-lg-6">
-                <h1 className="display-5 fw-bold lh-1 mb-3">
-                  One-Stop Shopping Destination
-                </h1>
-                <p className="lead">
-                  With Upfront, You can find everything you need from a variety
-                  of trusted vendors all in one place. Enjoy a simple, easy, and
-                  enjoyable shopping experience every time you visit.
-                </p>
-                <div className="d-grid gap-2 d-md-flex justify-content-md-start">
-                  <button
-                    type="button"
-                    className="btn btn-warning btn-lg px-4 me-md-2"
-                  >
-                    Start Shopping
-                  </button>
+              <div className="carousel-item">
+                <div className="banner-container" style={{ position: "relative", paddingTop: "40%" }}>
+                  <img 
+                    src="https://images-eu.ssl-images-amazon.com/images/G/31/IMG24/Smart_Watches/MAY_ART25/GW-SM-PC-3000x1200-Main-Event._CB794882394_.jpg" 
+                    className="position-absolute top-0 start-0 w-100 h-100"
+                    alt="Sale Banner 2"
+                    style={{ objectFit: "cover" }}
+                  />
+                </div>
+              </div>
+              <div className="carousel-item">
+                <div className="banner-container" style={{ position: "relative", paddingTop: "40%" }}>
+                  <img 
+                    src="https://images-eu.ssl-images-amazon.com/images/G/31/img21/Wireless/vinambia/80xevent/D237922473_PC_Hero_Lifestyle_3000x1200_2._CB794984849_.jpg" 
+                    className="position-absolute top-0 start-0 w-100 h-100"
+                    alt="Sale Banner 3"
+                    style={{ objectFit: "cover" }}
+                  />
                 </div>
               </div>
             </div>
-          </div>
 
+            {/* Overlay text positioned absolutely over the banners */}
+            <div className="carousel-caption d-none d-md-block text-start" style={{ bottom: "20%", left: "10%", right: "auto" }}>
+              <h1 className="display-4 fw-bold">Special Sale Now Live!</h1>
+              <p className="lead mb-4">Incredible deals on all your favorite products</p>
+              <button type="button" className="btn btn-warning btn-lg px-4 fw-bold">
+                Shop Now
+              </button>
+            </div>
+
+            <button className="carousel-control-prev" type="button" data-bs-target="#bannerCarousel" data-bs-slide="prev">
+              <span className="carousel-control-prev-icon" aria-hidden="true"></span>
+              <span className="visually-hidden">Previous</span>
+            </button>
+            <button className="carousel-control-next" type="button" data-bs-target="#bannerCarousel" data-bs-slide="next">
+              <span className="carousel-control-next-icon" aria-hidden="true"></span>
+              <span className="visually-hidden">Next</span>
+            </button>
+          </div>
+        </div>
+
+        <div className="container">
           <hr />
 
           <section>
@@ -221,7 +263,7 @@ function Products() {
                     <Link to={`/detail/${p.slug}/`}>
                       <div className="ratio ratio-4x3 position-relative">
                         <img
-                          src={p.image}
+                          src={getImageUrl(p.image)}
                           className="object-fit-contain"
                           alt={p.title}
                         />
@@ -453,14 +495,11 @@ function Products() {
                   style={{ cursor: "pointer" }}
                 >
                   <img
-                    src={c.image}
-                    className="object-fit-cover rounded-circle mb-2"
+                    src={getImageUrl(c.image)}
+                    className="rounded-circle"
                     alt={c.title}
-                    style={{
-                      width: "100px",
-                      height: "100px",
-                      objectFit: "cover",
-                    }}
+                    width="40"
+                    height="40"
                   />
                   <h6>{c.title}</h6>
                 </div>
@@ -476,9 +515,10 @@ function Products() {
                       <Link to={`/detail/${p.slug}/`}>
                         <div className="ratio ratio-4x3 position-relative">
                           <img
-                            src={p.image}
-                            className="object-fit-contain"
+                            src={getImageUrl(p.image)}
+                            className="card-img-top p-2"
                             alt={p.title}
+                            style={{ height: "200px", objectFit: "contain" }}
                           />
                         </div>
                       </Link>

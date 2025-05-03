@@ -7,6 +7,7 @@ import GetCurrentAddress from "../plugin/UserCountry";
 import UserData from "../plugin/UserData";
 import CartID from "../plugin/CartID";
 import { CartContext } from "../plugin/Context";
+import { getImageUrl } from "../../utils/imageUtils";
 
 import { Toast, AlertFailed } from "../base/Alert";
 
@@ -46,14 +47,14 @@ function ProductDetail() {
       setProduct(res.data);
       setSpecifications(res.data.specification);
       setGallery(res.data.gallery);
-      setSelectedImage(res.data.image);
+      setSelectedImage(getImageUrl(res.data.image));
       setSelectedSize(res.data.size[0]?.name || "");
       setSelectedColor(res.data.color[0]?.name || "");
     });
   }, [param.slug]);
 
   const handleImageSelect = (image) => {
-    setSelectedImage(image);
+    setSelectedImage(getImageUrl(image));
   };
 
   const handleAddToCart = async () => {
@@ -139,15 +140,7 @@ function ProductDetail() {
           >
             <img
               src={selectedImage}
-              style={{
-                width: "100%",
-                height: "100%",
-                objectFit: "contain",
-                position: "absolute",
-                top: "0",
-                left: "0",
-                WebkitUserSelect: "none",
-              }}
+              className="img-fluid"
               alt={product.title}
             />
           </div>
@@ -158,9 +151,9 @@ function ProductDetail() {
             >
               <div className="ratio ratio-1x1 rounded-1 overflow-hidden">
                 <img
-                  src={product.image}
-                  style={{ objectFit: "cover", width: "100%", height: "100%" }}
-                  alt="Main"
+                  src={getImageUrl(product.image)}
+                  alt={product.title}
+                  className="img-fluid"
                 />
               </div>
             </div>
@@ -172,13 +165,9 @@ function ProductDetail() {
               >
                 <div className="ratio ratio-1x1 rounded-1 overflow-hidden">
                   <img
-                    src={item.image}
-                    style={{
-                      objectFit: "cover",
-                      width: "100%",
-                      height: "100%",
-                    }}
-                    alt={`Gallery ${index + 1}`}
+                    src={getImageUrl(item.image)}
+                    alt="Gallery"
+                    className="img-fluid"
                   />
                 </div>
               </div>
@@ -396,13 +385,11 @@ function ProductDetail() {
                         style={{ width: "120px", height: "120px" }}
                       >
                         <img
-                          src={product.vendor?.image}
-                          style={{
-                            width: "100%",
-                            height: "100%",
-                            objectFit: "cover",
-                          }}
+                          src={getImageUrl(product.vendor?.image)}
                           alt={product.vendor?.name}
+                          className="rounded-circle border object-fit-cover"
+                          width="50"
+                          height="50"
                         />
                       </div>
                       <h5 className="mb-2">{product.vendor?.name}</h5>
@@ -472,14 +459,11 @@ function ProductDetail() {
                           <div className="card-body p-3">
                             <div className="d-flex align-items-center mb-2">
                               <img
-                                src={r.profile?.image}
-                                className="rounded-circle me-2"
-                                alt="User"
-                                style={{
-                                  width: "40px",
-                                  height: "40px",
-                                  objectFit: "cover",
-                                }}
+                                src={getImageUrl(r.profile?.image)}
+                                alt={r.user}
+                                className="rounded-circle me-2 object-fit-cover"
+                                width="40"
+                                height="40"
                               />
                               <div>
                                 <h6 className="mb-0 small">

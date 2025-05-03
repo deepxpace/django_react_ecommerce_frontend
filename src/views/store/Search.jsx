@@ -1,10 +1,12 @@
-import { useEffect, useState } from "react";
-import { Link, useSearchParams, useLocation } from "react-router-dom";
+import { useEffect, useState, useContext } from "react";
+import { Link, useSearchParams, useLocation, useNavigate } from "react-router-dom";
 
 import apiInstance from "../../utils/axios";
 import GetCurrentAddress from "../plugin/UserCountry";
 import UserData from "../plugin/UserData";
 import CartID from "../plugin/CartID";
+import { CartContext } from "../plugin/Context";
+import { getImageUrl } from "../../utils/imageUtils";
 
 import { Toast, AlertFailed } from "../base/Alert";
 
@@ -579,12 +581,12 @@ function Search() {
                 <div className="row row-cols-2 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 g-3">
                   {products?.map((p, index) => (
                     <div className="col-lg-4 col-md-6 mb-2" key={index}>
-                      <div className="card border rounded rounded-1 h-100 d-flex flex-column">
+                      <div className="card h-100 border shadow-sm">
                         <Link to={`/detail/${p.slug}/`}>
-                          <div className="ratio ratio-4x3 position-relative">
+                          <div className="ratio ratio-4x3 p-2">
                             <img
-                              src={p.image}
-                              className="object-fit-contain"
+                              src={getImageUrl(p.image)}
+                              className="card-img-top object-fit-contain"
                               alt={p.title}
                             />
                           </div>
