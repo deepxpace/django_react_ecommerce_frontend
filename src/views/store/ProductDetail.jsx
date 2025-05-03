@@ -8,6 +8,7 @@ import UserData from "../plugin/UserData";
 import CartID from "../plugin/CartID";
 import { CartContext } from "../plugin/Context";
 import ProductImage from "../../components/ProductImage";
+import { formatCurrency } from "../../utils/currencyUtils";
 
 import { Toast, AlertFailed } from "../base/Alert";
 
@@ -217,9 +218,9 @@ function ProductDetail() {
             </div>
 
             <div className="mb-3">
-              <span className="h4 text-primary me-2">${product.price}</span>
+              <span className="h4 text-primary me-2">{formatCurrency(product.price)}</span>
               {product.old_price && (
-                <del className="text-muted small">${product.old_price}</del>
+                <del className="text-muted small">{formatCurrency(product.old_price)}</del>
               )}
             </div>
 

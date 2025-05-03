@@ -50,7 +50,7 @@ function Logout() {
                     >
                       <div className="text-white mb-5">
                         <h2 className="display-6 fw-bold mb-4">
-                          Upfront Market
+                          Kosimart Market
                         </h2>
                         <p className="lead mb-0">
                           Your trusted marketplace for quality products and

@@ -2,7 +2,7 @@
 
 Django React E-commerce Backend can be acces at https://github.com/auriorajaa/django_react_ecommerce_backend
 
-This is the frontend repository for Upfront, a multi-vendor e-commerce platform built with React.js and Vite. This frontend provides the user interface for the e-commerce platform, integrating with the Django Rest Framework backend.
+This is the frontend repository for Kosimart, a multi-vendor e-commerce platform built with React.js and Vite. This frontend provides the user interface for the e-commerce platform, integrating with the Django Rest Framework backend.
 
 ![Cover GitHub](https://github.com/user-attachments/assets/cc1538fb-9610-4826-b034-7ffdc06132aa)
 

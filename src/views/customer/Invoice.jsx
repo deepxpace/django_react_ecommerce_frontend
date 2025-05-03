@@ -242,7 +242,7 @@ function Invoice() {
       <div className="mt-4 pt-4 border-top text-center">
         <p className="mb-1">Thank you for your business!</p>
         <small className="text-muted">
-          For any questions, please contact support at support@upfront.com
+          For any questions, please contact support at support@kosimart.com
         </small>
       </div>
     </div>

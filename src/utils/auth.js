@@ -39,6 +39,29 @@ export const register = async (
   password2
 ) => {
   try {
+    // Validate the passwords match
+    if (password !== password2) {
+      return {
+        data: null,
+        error: "Passwords do not match",
+      };
+    }
+
+    // Check password length
+    if (password.length < 8) {
+      return {
+        data: null,
+        error: "Password must be at least 8 characters long",
+      };
+    }
+
+    console.log("Sending registration request with data:", {
+      full_name,
+      email,
+      phone,
+      password: "******", // Don't log actual password
+    });
+
     const { data } = await axios.post("user/register/", {
       full_name,
       email,
@@ -47,19 +70,40 @@ export const register = async (
       password2,
     });
 
+    console.log("Registration successful, attempting login");
+    
     await login(email, password);
 
     // Alert the user that they have successfully registered
     Toast.fire({
       icon: "success",
-      title: "Register successfully",
+      title: "Registration successful",
     });
 
     return { data, error: null };
   } catch (error) {
+    console.error("Registration error:", error.response?.data || error);
+    
+    // Extract the specific error message
+    let errorMessage = "Something went wrong";
+    
+    if (error.response?.data) {
+      if (error.response.data.detail) {
+        errorMessage = error.response.data.detail;
+      } else if (error.response.data.email) {
+        errorMessage = `Email error: ${error.response.data.email[0]}`;
+      } else if (error.response.data.password) {
+        errorMessage = `Password error: ${error.response.data.password[0]}`;
+      } else if (error.response.data.phone) {
+        errorMessage = `Phone error: ${error.response.data.phone[0]}`;
+      } else if (error.response.data.full_name) {
+        errorMessage = `Name error: ${error.response.data.full_name[0]}`;
+      }
+    }
+    
     return {
       data: null,
-      error: error.response.data?.detail || "Something went wrong",
+      error: errorMessage,
     };
   }
 };
@@ -127,5 +171,58 @@ export const isAccessTokenExpired = (accessToken) => {
     return decodedToken.exp < Date.now() / 100;
   } catch (error) {
     return true;
+  }
+};
+
+/**
+ * Request a password reset for the given email
+ * @param {string} email - The email address to send reset link to
+ */
+export const requestPasswordReset = async (email) => {
+  try {
+    const { status } = await axios.get(`user/password-reset/${email}/`);
+    
+    if (status === 200) {
+      Toast.fire({
+        icon: "success",
+        title: "Password reset link sent to your email",
+      });
+    }
+    
+    return { error: null };
+  } catch (error) {
+    return {
+      error: error.response?.data?.detail || "User with this email was not found",
+    };
+  }
+};
+
+/**
+ * Reset a password using the OTP and user ID
+ * @param {string} otp - One-time password from the email link
+ * @param {string} uidb64 - User ID from the email link
+ * @param {string} password - New password
+ */
+export const resetPassword = async (otp, uidb64, password) => {
+  try {
+    const { data, status } = await axios.post("user/password-change/", {
+      otp,
+      uidb64,
+      password,
+    });
+    
+    if (status === 200) {
+      Toast.fire({
+        icon: "success",
+        title: "Password changed successfully",
+      });
+    }
+    
+    return { data, error: null };
+  } catch (error) {
+    return {
+      data: null,
+      error: error.response?.data?.message || "Failed to reset password",
+    };
   }
 };

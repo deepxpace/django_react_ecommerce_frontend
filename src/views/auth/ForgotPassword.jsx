@@ -1,16 +1,47 @@
 import { useState } from "react";
-import apiInstance from "../../utils/axios";
+import { requestPasswordReset } from "../../utils/auth";
+import { validateEmail } from "../../utils/validation";
+import { AlertFailed, Toast } from "../base/Alert";
 
 function ForgotPassword() {
   const [email, setEmail] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    // Validate email
+    const validation = validateEmail(email);
+    if (!validation.isValid) {
+      setErrorMessage(validation.error);
+      return;
+    }
+    
+    setErrorMessage("");
+    setIsLoading(true);
+    
     try {
-      await apiInstance.get(`user/password-reset/${email}/`).then((res) => {
-        alert("An email has been sent to you");
-      });
+      const { error } = await requestPasswordReset(email);
+      
+      if (error) {
+        AlertFailed.fire({
+          icon: "error",
+          title: error
+        });
+      } else {
+        Toast.fire({
+          icon: "success",
+          title: "Password reset instructions sent to your email"
+        });
+      }
     } catch (error) {
-      alert("Email does not exists");
+      AlertFailed.fire({
+        icon: "error",
+        title: "User with this email doesn't exist"
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -25,8 +56,11 @@ function ForgotPassword() {
                 <div className="card rounded-0">
                   <div className="card-body p-4">
                     <h3 className="text-center">Forgot Password</h3>
+                    <p className="text-center text-muted small">
+                      Enter your email address and we'll send you instructions to reset your password.
+                    </p>
                     <br />
-                    <div>
+                    <form onSubmit={handleSubmit}>
                       {/* Email input */}
                       <div className="form-outline mb-4">
                         <label className="form-label">Email Address</label>
@@ -34,20 +68,33 @@ function ForgotPassword() {
                           type="email"
                           id="email"
                           name="email"
-                          className="form-control"
+                          className={`form-control ${errorMessage ? 'is-invalid' : ''}`}
+                          value={email}
                           onChange={(e) => setEmail(e.target.value)}
+                          required
                         />
+                        {errorMessage && (
+                          <div className="invalid-feedback">{errorMessage}</div>
+                        )}
                       </div>
 
                       <div className="text-center">
                         <button
-                          onClick={handleSubmit}
+                          type="submit"
                           className="btn btn-warning w-100"
+                          disabled={isLoading}
                         >
-                          Send Email
+                          {isLoading ? (
+                            <>
+                              <span className="mr-2">Processing...</span>
+                              <i className="fas fa-spinner fa-spin" />
+                            </>
+                          ) : (
+                            'Send Reset Instructions'
+                          )}
                         </button>
                       </div>
-                    </div>
+                    </form>
                   </div>
                 </div>
               </div>

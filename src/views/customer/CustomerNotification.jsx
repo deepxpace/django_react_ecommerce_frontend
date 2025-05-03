@@ -127,7 +127,7 @@ function CustomerNotification() {
                             </div>
                             <p className="mb-1 text-muted">
                               Your order has been confirmed. Thanks for shopping
-                              with Upfront!
+                              with Kosimart!
                             </p>
                           </div>
                         </div>

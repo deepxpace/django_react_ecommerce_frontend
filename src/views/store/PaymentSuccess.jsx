@@ -128,9 +128,8 @@ const PaymentSuccess = () => {
       }
     };
 
-    if (paypal_order_id || sessionId) {
-      verifyPayment();
-    }
+    // Always verify payment regardless of payment method
+    verifyPayment();
   }, [param.order_oid, sessionId, paypal_order_id]); 
 
   const getProgressWidth = () => {
@@ -544,7 +543,13 @@ const PaymentSuccess = () => {
                   <p className="mb-1">
                     Order Date: {new Date(order.date).toLocaleDateString()}
                   </p>
-                  {/* <p className="mb-1 text-capitalize">
+                  <p className="mb-1 text-capitalize">
+                    Payment Method:{" "}
+                    <span className="badge bg-primary">
+                      {order.payment_method}
+                    </span>
+                  </p>
+                  <p className="mb-1 text-capitalize">
                     Payment Status:{" "}
                     <span className="badge bg-success">
                       {order.payment_status}
@@ -553,7 +558,7 @@ const PaymentSuccess = () => {
                   <p className="text-capitalize">
                     Order Status:{" "}
                     <span className="badge bg-info">{order.order_status}</span>
-                  </p> */}
+                  </p>
                 </div>
               </div>
 

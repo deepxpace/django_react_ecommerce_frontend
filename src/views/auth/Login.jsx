@@ -59,7 +59,7 @@ function Login() {
                       width={60}
                       src="https://img.icons8.com/?size=100&id=66760&format=png&color=D57907"
                     />
-                    <h1 className="ms-2 display-4">Welcome to Upfront!</h1>
+                    <h1 className="ms-2 display-4">Welcome to Kosimart!</h1>
                   </span>
                   <p className="lead">
                     We offer the best services to help you achieve your goals.
@@ -68,7 +68,7 @@ function Login() {
                   <p className="d-none d-lg-block">
                     Discover a world of endless possibilities where you can shop
                     from a diverse range of vendors, find unique products, and
-                    enjoy a seamless shopping experience. Join Upfront today and
+                    enjoy a seamless shopping experience. Join Kosimart today and
                     elevate your online shopping journey!
                   </p>
                 </div>
@@ -90,7 +90,7 @@ function Login() {
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
                           className="form-control"
-                          placeholder="yourmail@upfront.com"
+                          placeholder="yourmail@kosimart.com"
                           required
                         />
                       </div>

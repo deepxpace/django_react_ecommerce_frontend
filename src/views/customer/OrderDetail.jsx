@@ -4,23 +4,35 @@ import Sidebar from "./Sidebar";
 import UserData from "../plugin/UserData";
 import apiInstance from "../../utils/axios";
 import moment from "moment";
+import { useAuthStore } from "../../store/auth";
 
 function OrderDetail() {
   const [isSidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [order, setOrder] = useState({});
   const [orderItems, setOrderItems] = useState([]);
-
+  const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
   const userData = UserData();
   const param = useParams();
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    setIsLoading(true);
+    // Always use "current" if we're authenticated but user_id is null
+    const userId = userData?.user_id || "current";
+    
     apiInstance
-      .get(`customer/order/${userData?.user_id}/${param.order_oid}/`)
+      .get(`customer/order/${userId}/${param.order_oid}/`)
       .then((res) => {
         setOrder(res.data);
         setOrderItems(res.data.orderitem);
+      })
+      .catch(err => {
+        console.error("Error fetching order details:", err);
+      })
+      .finally(() => {
+        setIsLoading(false);
       });
-  }, []);
+  }, [param.order_oid, isLoggedIn]);
 
   return (
     <div className="container mt-3">

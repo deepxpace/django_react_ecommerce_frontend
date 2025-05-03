@@ -5,6 +5,7 @@ import CartID from "../plugin/CartID";
 import GetCurrentAddress from "../plugin/UserCountry";
 import { CartContext } from "../plugin/Context";
 import ProductImage from "../../components/ProductImage";
+import { formatCurrency } from "../../utils/currencyUtils";
 
 import { Toast, AlertFailed } from "../base/Alert";
 import { useNavigate } from "react-router-dom";
@@ -414,7 +415,7 @@ function Cart() {
                     {/* Price & Remove Button */}
                     <div className="col-6 col-md-2 text-end">
                       <div className="d-flex flex-column align-items-end">
-                        <h6 className="mb-2 fw-semibold">${c.sub_total}</h6>
+                        <h6 className="mb-2 fw-semibold">{formatCurrency(c.sub_total)}</h6>
                         <button
                           className="btn btn-outline-danger btn-sm"
                           onClick={(e) => handleDeleteCartItem(c.id)}
@@ -563,7 +564,7 @@ function Cart() {
                       className="d-flex justify-content-between mb-2"
                     >
                       <span className="text-muted small">{item.label}</span>
-                      <span className="small">${item.value?.toFixed(2)}</span>
+                      <span className="small">{formatCurrency(item.value?.toFixed(2))}</span>
                     </div>
                   ))}
 
@@ -572,7 +573,7 @@ function Cart() {
                   {/* Total */}
                   <div className="d-flex justify-content-between mb-4 fw-semibold">
                     <span>Total</span>
-                    <span>${cartTotal.total?.toFixed(2)}</span>
+                    <span>{formatCurrency(cartTotal.total?.toFixed(2))}</span>
                   </div>
 
                   {/* Checkout Button */}

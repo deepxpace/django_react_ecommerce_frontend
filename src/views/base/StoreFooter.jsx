@@ -70,7 +70,7 @@ function StoreFooter() {
                 <strong>About us</strong>
               </p>
               <p>
-                Upfront offer the best services to help you achieve your goals.
+                Kosimart offer the best services to help you achieve your goals.
                 Discover a world of endless possibilities where you can shop
                 from a diverse range of vendors, find unique products, and enjoy
                 a seamless shopping experience.
@@ -173,7 +173,7 @@ function StoreFooter() {
           className="text-center p-3 text-secondary"
           style={{ backgroundColor: "rgba(0, 0, 0, 0.2)" }}
         >
-          © 2025 Copyright: Upfront
+          © 2025 Copyright: Kosimart
         </div>
         {/* Copyright */}
       </footer>

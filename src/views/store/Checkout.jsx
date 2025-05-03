@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import apiInstance from "../../utils/axios";
 import { SERVER_URL, PAYPAL_CLIENT_ID } from "../../utils/constants";
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
+import { formatCurrency } from "../../utils/currencyUtils";
 
 import { Toast, AlertFailed } from "../base/Alert";
 
@@ -11,13 +12,14 @@ function Checkout() {
   const [couponCode, setCouponCode] = useState("");
   const [couponApplied, setCouponApplied] = useState(false);
   const [paymentLoading, setPaymentLoading] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState("stripe"); // Default to stripe
 
   const param = useParams();
   const navigate = useNavigate();
 
   const initialOptions = {
     clientId: PAYPAL_CLIENT_ID,
-    currency: "USD",
+    currency: "NPR",
     intent: "capture",
     components: "buttons",
   };
@@ -28,7 +30,7 @@ function Checkout() {
         purchase_units: [
           {
             amount: {
-              currency_code: "USD",
+              currency_code: "NPR",
               value: order.total.toString(),
             },
             description: "Order payment",
@@ -132,6 +134,141 @@ function Checkout() {
   const payWithStripe = (event) => {
     setPaymentLoading(true);
     event.target.form.submit();
+  };
+
+  // Handle Cash on Delivery payment
+  const handleCashOnDelivery = async () => {
+    try {
+      setPaymentLoading(true);
+      
+      // Get cart ID from localStorage
+      const cartId = localStorage.getItem("cart_id");
+      
+      // Call your backend API to mark this order as Cash on Delivery
+      const response = await apiInstance.post(`order/cod/${order?.oid}/`, {
+        cart_id: cartId
+      });
+      
+      if (response.data.success) {
+        Toast.fire({
+          icon: "success",
+          title: "Order placed successfully with Cash on Delivery!",
+        });
+        
+        // Navigate to success page
+        navigate(`/payment-success/${order?.oid}/?payment_method=cash_on_delivery`);
+      } else {
+        Toast.fire({
+          icon: "error",
+          title: response.data.message || "Failed to place order",
+        });
+      }
+    } catch (error) {
+      console.error("Cash on Delivery error:", error);
+      AlertFailed.fire({
+        icon: "error",
+        title: "Failed to place order with Cash on Delivery",
+      });
+    } finally {
+      setPaymentLoading(false);
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    try {
+      if (!isLoggedIn || !user) {
+        AlertFailed.fire({
+          icon: "error",
+          title: "Please login to continue",
+        });
+        navigate("/login", { state: { from: "/checkout" } });
+        return;
+      }
+
+      if (!cartItems || cartItems.length === 0) {
+        AlertFailed.fire({
+          icon: "error",
+          title: "Your cart is empty",
+        });
+        navigate("/cart");
+        return;
+      }
+
+      // Get cart ID from localStorage
+      const cartId = localStorage.getItem("cart_id");
+
+      const orderData = {
+        user: user.id,
+        cart: cart.id,
+        cart_id: cartId,
+        payment_method: paymentMethod,
+        shipping_address: shippingAddress,
+        total_amount: cartTotal,
+        full_name: user.full_name || `${user.first_name} ${user.last_name}`,
+        email: user.email,
+        mobile: user.phone,
+        address: shippingAddress.address,
+        city: shippingAddress.city,
+        state: shippingAddress.state,
+        country: shippingAddress.country,
+      };
+
+      const response = await apiInstance.post("/create-order/", orderData);
+
+      if (response.data.error) {
+        AlertFailed.fire({
+          icon: "error",
+          title: response.data.error,
+        });
+        return;
+      }
+
+      if (paymentMethod === "card") {
+        const stripeResponse = await apiInstance.post(
+          `/stripe-checkout/${response.data.order_oid}/`
+        );
+        if (stripeResponse.data.url) {
+          window.location.href = stripeResponse.data.url;
+          return;
+        }
+      } else if (paymentMethod === "cod") {
+        // Handle Cash on Delivery
+        const codResponse = await apiInstance.post(`/order/cod/${response.data.order_oid}/`, {
+          cart_id: cartId
+        });
+        
+        if (codResponse.data.success) {
+          AlertSuccess.fire({
+            icon: "success",
+            title: "Order placed successfully with Cash on Delivery!",
+          });
+          
+          // Clear cart data since order was completed
+          useCartStore.getState().clearCart();
+          
+          navigate("/payment-success");
+          return;
+        }
+      }
+
+      AlertSuccess.fire({
+        icon: "success",
+        title: "Order placed successfully!",
+      });
+
+      navigate("/payment-success");
+    } catch (error) {
+      console.error("Checkout error:", error);
+      AlertFailed.fire({
+        icon: "error",
+        title: error.response?.data?.detail || "Failed to place order",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -424,13 +561,9 @@ function Checkout() {
                       <div className="d-flex align-items-center">
                         <span className="text-muted small">{item.label}</span>
                       </div>
-                      <span
-                        className={`small ${
-                          item.isNegative ? "text-success" : ""
-                        }`}
-                      >
-                        {item.isNegative && Number(item.value) > 0 ? "-" : ""}$
-                        {item.value}
+                      <span className={`small ${item.isNegative ? "text-success" : ""}`}>
+                        {item.isNegative && Number(item.value) > 0 ? "-" : ""}
+                        {formatCurrency(item.value)}
                       </span>
                     </div>
                   ))}
@@ -439,9 +572,9 @@ function Checkout() {
                 <hr className="my-3" />
 
                 {/* Total */}
-                <div className="d-flex justify-content-between mb-4 fw-semibold">
+                <div className="d-flex justify-content-between fw-bold fs-5 mt-2">
                   <span>Total</span>
-                  <span>${order?.total}</span>
+                  <span>{formatCurrency(order?.total)}</span>
                 </div>
 
                 <div className="mb-4">
@@ -470,73 +603,156 @@ function Checkout() {
                   )}
                 </div>
 
+                {/* Payment Method Selection */}
+                <div className="mb-4">
+                  <h6 className="mb-3">Select Payment Method</h6>
+                  <div className="form-check mb-3">
+                    <input
+                      className="form-check-input"
+                      type="radio"
+                      name="paymentMethod"
+                      id="stripe"
+                      value="stripe"
+                      checked={paymentMethod === "stripe"}
+                      onChange={(e) => setPaymentMethod(e.target.value)}
+                    />
+                    <label className="form-check-label d-flex align-items-center" htmlFor="stripe">
+                      <i className="fab fa-stripe text-primary me-2"></i>
+                      Credit/Debit Card (Stripe)
+                    </label>
+                  </div>
+                  <div className="form-check mb-3">
+                    <input
+                      className="form-check-input"
+                      type="radio"
+                      name="paymentMethod"
+                      id="paypal"
+                      value="paypal"
+                      checked={paymentMethod === "paypal"}
+                      onChange={(e) => setPaymentMethod(e.target.value)}
+                    />
+                    <label className="form-check-label d-flex align-items-center" htmlFor="paypal">
+                      <i className="fab fa-paypal text-primary me-2"></i>
+                      PayPal
+                    </label>
+                  </div>
+                  <div className="form-check mb-3">
+                    <input
+                      className="form-check-input"
+                      type="radio"
+                      name="paymentMethod"
+                      id="cod"
+                      value="cod"
+                      checked={paymentMethod === "cod"}
+                      onChange={(e) => setPaymentMethod(e.target.value)}
+                    />
+                    <label className="form-check-label d-flex align-items-center" htmlFor="cod">
+                      <i className="fas fa-money-bill-wave text-success me-2"></i>
+                      Cash on Delivery
+                    </label>
+                  </div>
+                </div>
+
                 {/* Payment Methods */}
                 <div className="mb-4">
                   <div className="row g-2">
-                    <div className="col-12">
-                      {paymentLoading === true && (
-                        <form
-                          action={`${SERVER_URL}/api/v1/stripe-checkout/${order?.oid}/`}
-                        >
-                          <button
-                            disabled
-                            onClick={payWithStripe}
-                            type="submit"
-                            className="btn w-100 d-flex justify-content-center align-items-center py-3 fw-semibold text-white shadow-sm"
-                            style={{
-                              backgroundColor: "#635bff",
-                              transition: "all 0.3s ease",
-                              border: "none",
-                              ...(window.CSS &&
-                                CSS.supports("(--a: 0)", {
-                                  ":hover": {
-                                    filter: "brightness(90%)",
-                                  },
-                                })),
-                            }}
+                    {paymentMethod === "stripe" && (
+                      <div className="col-12">
+                        {paymentLoading === true && (
+                          <form
+                            action={`${SERVER_URL}/api/v1/stripe-checkout/${order?.oid}/`}
                           >
-                            <i className="fas fa-spinner fa-spin me-2"></i>
-                            Processing...
-                          </button>
-                        </form>
-                      )}
+                            <button
+                              disabled
+                              onClick={payWithStripe}
+                              type="submit"
+                              className="btn w-100 d-flex justify-content-center align-items-center py-3 fw-semibold text-white shadow-sm"
+                              style={{
+                                backgroundColor: "#635bff",
+                                transition: "all 0.3s ease",
+                                border: "none",
+                                ...(window.CSS &&
+                                  CSS.supports("(--a: 0)", {
+                                    ":hover": {
+                                      filter: "brightness(90%)",
+                                    },
+                                  })),
+                              }}
+                            >
+                              <i className="fas fa-spinner fa-spin me-2"></i>
+                              Processing...
+                            </button>
+                          </form>
+                        )}
 
-                      {paymentLoading === false && (
-                        <form
-                          method="POST"
-                          action={`${SERVER_URL}/api/v1/stripe-checkout/${order?.oid}/`}
-                        >
-                          <button
-                            onClick={payWithStripe}
-                            type="submit"
-                            className="btn w-100 d-flex justify-content-center align-items-center py-3 fw-semibold text-white shadow-sm"
-                            style={{
-                              backgroundColor: "#635bff",
-                              transition: "all 0.3s ease",
-                              border: "none",
-                              ...(window.CSS &&
-                                CSS.supports("(--a: 0)", {
-                                  ":hover": {
-                                    filter: "brightness(90%)",
-                                  },
-                                })),
-                            }}
+                        {paymentLoading === false && (
+                          <form
+                            method="POST"
+                            action={`${SERVER_URL}/api/v1/stripe-checkout/${order?.oid}/`}
                           >
-                            <i className="fab fa-stripe me-2"></i>
-                            Pay with Stripe
-                          </button>
-                        </form>
-                      )}
-                    </div>
+                            <button
+                              onClick={payWithStripe}
+                              type="submit"
+                              className="btn w-100 d-flex justify-content-center align-items-center py-3 fw-semibold text-white shadow-sm"
+                              style={{
+                                backgroundColor: "#635bff",
+                                transition: "all 0.3s ease",
+                                border: "none",
+                                ...(window.CSS &&
+                                  CSS.supports("(--a: 0)", {
+                                    ":hover": {
+                                      filter: "brightness(90%)",
+                                    },
+                                  })),
+                              }}
+                            >
+                              <i className="fab fa-stripe me-2"></i>
+                              Pay with Stripe
+                            </button>
+                          </form>
+                        )}
+                      </div>
+                    )}
 
-                    <PayPalScriptProvider options={initialOptions}>
-                      <PayPalButtons
-                        className="mt-3"
-                        createOrder={createPayPalOrder}
-                        onApprove={onApprovePayPalOrder}
-                        onError={onErrorHandler}
-                      />
-                    </PayPalScriptProvider>
+                    {paymentMethod === "paypal" && (
+                      <div className="col-12">
+                        <PayPalScriptProvider options={initialOptions}>
+                          <PayPalButtons
+                            className="mt-3"
+                            createOrder={createPayPalOrder}
+                            onApprove={onApprovePayPalOrder}
+                            onError={onErrorHandler}
+                          />
+                        </PayPalScriptProvider>
+                      </div>
+                    )}
+
+                    {paymentMethod === "cod" && (
+                      <div className="col-12">
+                        <button
+                          onClick={handleCashOnDelivery}
+                          disabled={paymentLoading}
+                          className="btn w-100 d-flex justify-content-center align-items-center py-3 fw-semibold text-white shadow-sm"
+                          style={{
+                            backgroundColor: "#28a745",
+                            transition: "all 0.3s ease",
+                            border: "none",
+                          }}
+                        >
+                          {paymentLoading ? (
+                            <>
+                              <i className="fas fa-spinner fa-spin me-2"></i>
+                              Processing...
+                            </>
+                          ) : (
+                            <>
+                              <i className="fas fa-money-bill-wave me-2"></i>
+                              Place Order (Cash on Delivery)
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
 

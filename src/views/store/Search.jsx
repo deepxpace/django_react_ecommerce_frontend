@@ -7,6 +7,7 @@ import UserData from "../plugin/UserData";
 import CartID from "../plugin/CartID";
 import { CartContext } from "../plugin/Context";
 import ProductImage from "../../components/ProductImage";
+import { formatCurrency } from "../../utils/currencyUtils";
 
 import { Toast, AlertFailed } from "../base/Alert";
 
@@ -612,9 +613,9 @@ function Search() {
                             <p>{p.category?.title}</p>
                           </a>
                           <h6 className="mb-3 mt-auto">
-                            <s>${p.old_price}</s>
+                            <s>{formatCurrency(p.old_price)}</s>
                             <strong className="ms-2 text-danger">
-                              ${p.price}
+                              {formatCurrency(p.price)}
                             </strong>
                           </h6>
                           <div className="mt-auto">
