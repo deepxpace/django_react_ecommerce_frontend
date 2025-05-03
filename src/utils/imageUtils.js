@@ -82,4 +82,51 @@ export const getImageUrl = (imageUrl) => {
     console.error('Error processing image URL:', error);
     return 'https://via.placeholder.com/400?text=Image+Error';
   }
+};
+
+/**
+ * Utility functions for handling image URLs
+ */
+
+/**
+ * Converts S3 URLs to proxy URLs to avoid CORS issues
+ * @param {string} originalUrl - The original S3 URL
+ * @returns {string} - The proxied URL
+ */
+export const getProxyImageUrl = (originalUrl) => {
+  if (!originalUrl) return ''; // Handle empty URLs
+  
+  // Extract the path after the S3 domain
+  const s3Prefix = 'https://koshimart-media.s3.amazonaws.com/';
+  if (originalUrl.startsWith(s3Prefix)) {
+    const path = originalUrl.substring(s3Prefix.length);
+    return `https://koshimart-api-6973a89b9858.herokuapp.com/media-proxy/${path}`;
+  }
+  
+  return originalUrl; // Return original if not S3
+};
+
+/**
+ * Creates a placeholder image URL based on the product name
+ * @param {string} productName - The name of the product
+ * @param {number} width - Width of the placeholder image
+ * @param {number} height - Height of the placeholder image 
+ * @returns {string} - Placeholder image URL
+ */
+export const getPlaceholderImage = (productName, width = 300, height = 300) => {
+  if (!productName) return `https://placehold.co/${width}x${height}/EEE/999?text=No+Image`;
+  
+  // Create a placeholder with the first letter of the product name
+  const initial = productName.charAt(0).toUpperCase();
+  return `https://placehold.co/${width}x${height}/EEE/999?text=${initial}`;
+};
+
+/**
+ * Handles image loading errors by replacing with placeholder
+ * @param {Event} event - The error event
+ */
+export const handleImageError = (event, productName) => {
+  event.target.src = getPlaceholderImage(productName);
+  event.target.alt = productName || 'Product image';
+  event.onerror = null; // Prevent infinite loop
 }; 

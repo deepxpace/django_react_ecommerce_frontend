@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { SERVER_URL } from '../utils/constants';
+import { getProxyImageUrl } from '../utils/imageUtils';
 
 /**
  * A debugging component to test various image URL formats
@@ -30,7 +31,13 @@ const ImageDebug = ({ originalSrc }) => {
       });
     }
     
-    // 3. Media path variations
+    // 3. New Proxy Solution (recommended)
+    variations.push({
+      name: 'Backend Proxy (Recommended)',
+      url: getProxyImageUrl(originalSrc)
+    });
+    
+    // 4. Media path variations
     if (originalSrc.includes('/media/') || 
         originalSrc.includes('product/') || 
         originalSrc.includes('category/')) {
@@ -56,7 +63,7 @@ const ImageDebug = ({ originalSrc }) => {
       });
     }
     
-    // 4. AWS S3 variations if applicable
+    // 5. AWS S3 variations if applicable
     if (originalSrc.includes('amazonaws.com') || originalSrc.includes('s3.')) {
       const s3UrlFixed = originalSrc.replace(/^\//, 'https://');
       variations.push({
@@ -130,8 +137,8 @@ const ImageDebug = ({ originalSrc }) => {
       </div>
       
       <div className="mt-3 alert alert-info">
-        <strong>Instructions:</strong> Look for the variation with a green "Loaded" badge. 
-        That URL pattern should be used in your ProductImage component.
+        <strong>Solution Implemented:</strong> The "Backend Proxy" solution has been implemented in the ProductImage component. 
+        This forwards S3 requests through your Django backend to avoid CORS issues.
       </div>
     </div>
   );
