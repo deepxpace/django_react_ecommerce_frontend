@@ -3,9 +3,10 @@ import { SERVER_URL } from './constants';
 // Debug flag - set to true to see image URL processing in console
 const DEBUG_IMAGES = true;
 
-// S3 bucket name
+// S3 bucket name and region
 const S3_BUCKET_NAME = 'koshimart-api';
-const S3_PREFIX = `https://${S3_BUCKET_NAME}.s3.amazonaws.com/`;
+const S3_REGION = 'eu-north-1';
+const S3_PREFIX = `https://${S3_BUCKET_NAME}.s3.${S3_REGION}.amazonaws.com/`;
 
 /**
  * Formats image URLs to ensure they work in both development and production
@@ -116,16 +117,22 @@ export const getProxyImageUrl = (originalUrl) => {
     return originalUrl;
   }
   
-  // Extract the path after the S3 domain
+  // Extract the path after the S3 domain (with region)
   if (originalUrl.startsWith(S3_PREFIX)) {
     const path = originalUrl.substring(S3_PREFIX.length);
     return `${SERVER_URL}/media-proxy/${path}`;
   }
   
-  // Handle old bucket name references
+  // Handle old bucket name references or URLs without region
   const oldS3Prefix = 'https://koshimart-media.s3.amazonaws.com/';
   if (originalUrl.startsWith(oldS3Prefix)) {
     const path = originalUrl.substring(oldS3Prefix.length);
+    return `${SERVER_URL}/media-proxy/${path}`;
+  }
+  
+  const noRegionPrefix = `https://${S3_BUCKET_NAME}.s3.amazonaws.com/`;
+  if (originalUrl.startsWith(noRegionPrefix)) {
+    const path = originalUrl.substring(noRegionPrefix.length);
     return `${SERVER_URL}/media-proxy/${path}`;
   }
   
