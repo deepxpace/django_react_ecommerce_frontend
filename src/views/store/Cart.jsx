@@ -4,7 +4,7 @@ import UserData from "../plugin/UserData";
 import CartID from "../plugin/CartID";
 import GetCurrentAddress from "../plugin/UserCountry";
 import { CartContext } from "../plugin/Context";
-import { getImageUrl } from "../../utils/imageUtils";
+import ProductImage from "../../components/ProductImage";
 
 import { Toast, AlertFailed } from "../base/Alert";
 import { useNavigate } from "react-router-dom";
@@ -344,8 +344,8 @@ function Cart() {
                   >
                     {/* Product Image */}
                     <div className="col-3 col-md-2">
-                      <img
-                        src={getImageUrl(c.product?.image)}
+                      <ProductImage
+                        src={c.product?.image}
                         alt="Product"
                         className="img-fluid rounded-3 border"
                         style={{ aspectRatio: "1/1", objectFit: "cover" }}

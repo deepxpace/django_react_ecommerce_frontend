@@ -6,7 +6,7 @@ import GetCurrentAddress from "../plugin/UserCountry";
 import UserData from "../plugin/UserData";
 import CartID from "../plugin/CartID";
 import { CartContext } from "../plugin/Context";
-import { getImageUrl } from "../../utils/imageUtils";
+import ProductImage from "../../components/ProductImage";
 
 import { Toast, AlertFailed } from "../base/Alert";
 
@@ -584,8 +584,8 @@ function Search() {
                       <div className="card h-100 border shadow-sm">
                         <Link to={`/detail/${p.slug}/`}>
                           <div className="ratio ratio-4x3 p-2">
-                            <img
-                              src={getImageUrl(p.image)}
+                            <ProductImage
+                              src={p.image}
                               className="card-img-top object-fit-contain"
                               alt={p.title}
                             />

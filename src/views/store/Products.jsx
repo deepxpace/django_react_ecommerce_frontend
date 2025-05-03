@@ -6,7 +6,7 @@ import GetCurrentAddress from "../plugin/UserCountry";
 import UserData from "../plugin/UserData";
 import CartID from "../plugin/CartID";
 import { CartContext } from "../plugin/Context";
-import { getImageUrl } from "../../utils/imageUtils";
+import ProductImage from "../../components/ProductImage";
 
 import { Toast, AlertFailed } from "../base/Alert";
 
@@ -262,8 +262,8 @@ function Products() {
                   <div className="card border rounded h-100 d-flex flex-column">
                     <Link to={`/detail/${p.slug}/`}>
                       <div className="ratio ratio-4x3 position-relative">
-                        <img
-                          src={getImageUrl(p.image)}
+                        <ProductImage
+                          src={p.image}
                           className="object-fit-contain"
                           alt={p.title}
                         />
@@ -494,8 +494,8 @@ function Products() {
                   onClick={() => handleCategoryClick(c.id)}
                   style={{ cursor: "pointer" }}
                 >
-                  <img
-                    src={getImageUrl(c.image)}
+                  <ProductImage
+                    src={c.image}
                     className="rounded-circle"
                     alt={c.title}
                     width="40"
@@ -514,8 +514,8 @@ function Products() {
                     <div className="card border rounded h-100 d-flex flex-column">
                       <Link to={`/detail/${p.slug}/`}>
                         <div className="ratio ratio-4x3 position-relative">
-                          <img
-                            src={getImageUrl(p.image)}
+                          <ProductImage
+                            src={p.image}
                             className="card-img-top p-2"
                             alt={p.title}
                             style={{ height: "200px", objectFit: "contain" }}

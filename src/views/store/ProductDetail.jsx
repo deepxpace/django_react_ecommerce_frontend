@@ -7,7 +7,7 @@ import GetCurrentAddress from "../plugin/UserCountry";
 import UserData from "../plugin/UserData";
 import CartID from "../plugin/CartID";
 import { CartContext } from "../plugin/Context";
-import { getImageUrl } from "../../utils/imageUtils";
+import ProductImage from "../../components/ProductImage";
 
 import { Toast, AlertFailed } from "../base/Alert";
 
@@ -47,14 +47,14 @@ function ProductDetail() {
       setProduct(res.data);
       setSpecifications(res.data.specification);
       setGallery(res.data.gallery);
-      setSelectedImage(getImageUrl(res.data.image));
+      setSelectedImage(res.data.image);
       setSelectedSize(res.data.size[0]?.name || "");
       setSelectedColor(res.data.color[0]?.name || "");
     });
   }, [param.slug]);
 
   const handleImageSelect = (image) => {
-    setSelectedImage(getImageUrl(image));
+    setSelectedImage(image);
   };
 
   const handleAddToCart = async () => {
@@ -138,10 +138,10 @@ function ProductDetail() {
               transition: "all 0.3s ease",
             }}
           >
-            <img
+            <ProductImage
               src={selectedImage}
-              className="img-fluid"
               alt={product.title}
+              className="img-fluid w-100 h-100"
             />
           </div>
           <div className="row g-2">
@@ -150,8 +150,8 @@ function ProductDetail() {
               onClick={() => handleImageSelect(product.image)}
             >
               <div className="ratio ratio-1x1 rounded-1 overflow-hidden">
-                <img
-                  src={getImageUrl(product.image)}
+                <ProductImage
+                  src={product.image}
                   alt={product.title}
                   className="img-fluid"
                 />
@@ -164,8 +164,8 @@ function ProductDetail() {
                 onClick={() => handleImageSelect(item.image)}
               >
                 <div className="ratio ratio-1x1 rounded-1 overflow-hidden">
-                  <img
-                    src={getImageUrl(item.image)}
+                  <ProductImage
+                    src={item.image}
                     alt="Gallery"
                     className="img-fluid"
                   />
@@ -384,12 +384,10 @@ function ProductDetail() {
                         className="rounded-circle overflow-hidden mx-auto mb-3"
                         style={{ width: "120px", height: "120px" }}
                       >
-                        <img
-                          src={getImageUrl(product.vendor?.image)}
+                        <ProductImage
+                          src={product.vendor?.image}
                           alt={product.vendor?.name}
-                          className="rounded-circle border object-fit-cover"
-                          width="50"
-                          height="50"
+                          className="w-100 h-100 object-fit-cover"
                         />
                       </div>
                       <h5 className="mb-2">{product.vendor?.name}</h5>
@@ -458,8 +456,8 @@ function ProductDetail() {
                         >
                           <div className="card-body p-3">
                             <div className="d-flex align-items-center mb-2">
-                              <img
-                                src={getImageUrl(r.profile?.image)}
+                              <ProductImage
+                                src={r.profile?.image}
                                 alt={r.user}
                                 className="rounded-circle me-2 object-fit-cover"
                                 width="40"
