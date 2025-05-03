@@ -20,9 +20,22 @@ const ProductImage = ({ src, alt = 'Product Image', className = '', style = {}, 
   useEffect(() => {
     if (src) {
       try {
+        // Get the processed URL from our utility
         const processedUrl = getImageUrl(src);
-        console.log(`[${alt}] Processed URL:`, processedUrl);
-        setImageUrl(processedUrl);
+        console.log(`[${alt}] Original processed URL:`, processedUrl);
+        
+        // If it's an S3 URL, use an image proxy to bypass CORS
+        if (processedUrl.includes('s3.amazonaws.com')) {
+          // Use a CORS proxy service for Amazon S3 images
+          const encodedUrl = encodeURIComponent(processedUrl);
+          // Using imgproxy.net as a CORS proxy (up to 100MB per day for free)
+          const proxyUrl = `https://imgproxy.netlify.app/api/image?url=${encodedUrl}`;
+          console.log(`[${alt}] Using proxy URL:`, proxyUrl);
+          setImageUrl(proxyUrl);
+        } else {
+          setImageUrl(processedUrl);
+        }
+        
         // Reset states when source changes
         setError(false);
         setLoaded(false);
@@ -42,36 +55,28 @@ const ProductImage = ({ src, alt = 'Product Image', className = '', style = {}, 
     console.warn(`[${alt}] Failed to load image: ${imageUrl}, retry count: ${retryCount}`);
     
     // Try to reload the image a few times before giving up
-    if (retryCount < 3) {
+    if (retryCount < 2) {
       setRetryCount(prevCount => prevCount + 1);
       
-      // Try a different approach with each retry
-      if (retryCount === 0 && imageUrl.includes('/media/')) {
-        // First retry: Try with direct media URL
-        const newUrl = imageUrl.replace('/media/', '/staticfiles/media/');
-        console.log(`[${alt}] Retry 1: Trying staticfiles path: ${newUrl}`);
-        setTimeout(() => setImageUrl(newUrl), 800);
-      } else if (retryCount === 1) {
-        // Second retry: Try with cache-busting parameter
-        const cacheBuster = `?t=${new Date().getTime()}`;
-        console.log(`[${alt}] Retry 2: Adding cache buster: ${imageUrl}${cacheBuster}`);
-        setTimeout(() => setImageUrl(`${imageUrl}${cacheBuster}`), 800);
+      // Try different approaches
+      if (retryCount === 0 && imageUrl.includes('s3.amazonaws.com')) {
+        // First retry: Try a different proxy for S3 images
+        const originalUrl = imageUrl.includes('imgproxy.netlify.app') 
+          ? decodeURIComponent(imageUrl.split('url=')[1]) 
+          : imageUrl;
+        
+        // Try a different proxy service
+        const proxyUrl = `https://wsrv.nl/?url=${encodeURIComponent(originalUrl)}&n=-1`;
+        console.log(`[${alt}] Retry 1: Using alternative proxy:`, proxyUrl);
+        setTimeout(() => setImageUrl(proxyUrl), 800);
       } else {
-        // Last retry: Try with different approach based on URL
-        if (imageUrl.includes('herokuapp.com')) {
-          // If it's a Heroku URL, try a different path construction
-          const parts = imageUrl.split('/');
-          const filename = parts[parts.length - 1];
-          const newUrl = `${parts.slice(0, 3).join('/')}/staticfiles/media/${filename}`;
-          console.log(`[${alt}] Retry 3: Reconstructed URL: ${newUrl}`);
-          setTimeout(() => setImageUrl(newUrl), 800);
-        } else {
-          console.log(`[${alt}] Retry 3: Final attempt with original URL`);
-          setTimeout(() => setImageUrl(`${imageUrl}?retry=final`), 800);
-        }
+        // Add a cache buster
+        const cacheBuster = `?t=${new Date().getTime()}`;
+        console.log(`[${alt}] Retry ${retryCount+1}: Adding cache buster`);
+        setTimeout(() => setImageUrl(prev => `${prev}${prev.includes('?') ? '&' : '?'}cb=${Date.now()}`), 800);
       }
     } else {
-      console.error(`[${alt}] All retries failed for image: ${imageUrl}`);
+      console.error(`[${alt}] All retries failed for image`);
       setError(true);
     }
   };
@@ -116,6 +121,7 @@ const ProductImage = ({ src, alt = 'Product Image', className = '', style = {}, 
           opacity: loaded && !error ? 1 : 0,
           ...style
         }}
+        crossOrigin="anonymous"
         {...props}
       />
     </div>

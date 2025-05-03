@@ -8,6 +8,7 @@ import UserData from "../plugin/UserData";
 import CartID from "../plugin/CartID";
 import { CartContext } from "../plugin/Context";
 import ProductImage from "../../components/ProductImage";
+import ImageDebug from "../../components/ImageDebug";
 import { formatCurrency } from "../../utils/currencyUtils";
 
 import { Toast, AlertFailed } from "../base/Alert";
@@ -38,6 +39,9 @@ function ProductDetail() {
   const currentAddress = GetCurrentAddress();
   const userData = UserData();
   const cart_id = CartID();
+
+  // Add debug mode state
+  const [debugMode, setDebugMode] = useState(false);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -173,6 +177,20 @@ function ProductDetail() {
                 </div>
               </div>
             ))}
+          </div>
+          
+          {/* Debug button - visible only in development */}
+          <div className="mt-3">
+            <button 
+              className="btn btn-sm btn-outline-secondary" 
+              onClick={() => setDebugMode(!debugMode)}
+            >
+              {debugMode ? 'Hide Debug Info' : 'Show Debug Info'}
+            </button>
+            
+            {debugMode && product.image && (
+              <ImageDebug originalSrc={product.image} />
+            )}
           </div>
         </div>
 
