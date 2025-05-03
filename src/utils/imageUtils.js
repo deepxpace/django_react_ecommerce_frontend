@@ -3,6 +3,10 @@ import { SERVER_URL } from './constants';
 // Debug flag - set to true to see image URL processing in console
 const DEBUG_IMAGES = true;
 
+// S3 bucket name
+const S3_BUCKET_NAME = 'koshimart-api';
+const S3_PREFIX = `https://${S3_BUCKET_NAME}.s3.amazonaws.com/`;
+
 /**
  * Formats image URLs to ensure they work in both development and production
  * @param {string} imageUrl - The image URL from the API
@@ -24,7 +28,7 @@ export const getImageUrl = (imageUrl) => {
       return imageUrl;
     }
     
-    // Direct S3 URL formatting for koshimart-media bucket
+    // Direct S3 URL formatting for koshimart-api bucket
     if (imageUrl.includes('s3.amazonaws.com') || imageUrl.includes('amazonaws.com')) {
       // Make sure it has the https:// prefix
       if (!imageUrl.startsWith('https://')) {
@@ -51,10 +55,10 @@ export const getImageUrl = (imageUrl) => {
         mediaPath = imageUrl.substring(1);
       }
       
-      // Construct direct S3 URL
-      const s3Url = `https://koshimart-media.s3.amazonaws.com/${mediaPath}`;
-      if (DEBUG_IMAGES) console.log('Created direct S3 URL:', s3Url);
-      return s3Url;
+      // Try the backend proxy URL first
+      const proxyUrl = `${SERVER_URL}/media-proxy/${mediaPath}`;
+      if (DEBUG_IMAGES) console.log('Using backend proxy URL:', proxyUrl);
+      return proxyUrl;
     }
     
     // For any other relative paths, try the server URL
@@ -65,13 +69,13 @@ export const getImageUrl = (imageUrl) => {
       return fullUrl;
     }
     
-    // Try to guess if it's a media file and build an S3 URL
+    // Try to guess if it's a media file and build a proxy URL
     if (imageUrl.endsWith('.jpg') || imageUrl.endsWith('.jpeg') || 
         imageUrl.endsWith('.png') || imageUrl.endsWith('.gif') ||
         imageUrl.endsWith('.webp')) {
-      const s3Url = `https://koshimart-media.s3.amazonaws.com/${imageUrl}`;
-      if (DEBUG_IMAGES) console.log('Constructed S3 URL for media file:', s3Url);
-      return s3Url;
+      const proxyUrl = `${SERVER_URL}/media-proxy/${imageUrl}`;
+      if (DEBUG_IMAGES) console.log('Constructed proxy URL for media file:', proxyUrl);
+      return proxyUrl;
     }
     
     // Last resort: prepend the server URL
@@ -89,21 +93,55 @@ export const getImageUrl = (imageUrl) => {
  */
 
 /**
- * Converts S3 URLs to proxy URLs to avoid CORS issues
- * @param {string} originalUrl - The original S3 URL
+ * Converts S3 URLs to proxy URLs to avoid CORS issues.
+ * Also handles local media URLs from Django.
+ * @param {string} originalUrl - The original URL (S3 or local)
  * @returns {string} - The proxied URL
  */
 export const getProxyImageUrl = (originalUrl) => {
   if (!originalUrl) return ''; // Handle empty URLs
   
-  // Extract the path after the S3 domain
-  const s3Prefix = 'https://koshimart-media.s3.amazonaws.com/';
-  if (originalUrl.startsWith(s3Prefix)) {
-    const path = originalUrl.substring(s3Prefix.length);
-    return `https://koshimart-api-6973a89b9858.herokuapp.com/media-proxy/${path}`;
+  // Already a local Django media URL
+  if (originalUrl.startsWith('/media/')) {
+    return `${SERVER_URL}${originalUrl}`;
   }
   
-  return originalUrl; // Return original if not S3
+  // Already a full Django media URL
+  if (originalUrl.startsWith(`${SERVER_URL}/media/`)) {
+    return originalUrl;
+  }
+  
+  // Already a media-proxy URL
+  if (originalUrl.includes('/media-proxy/')) {
+    return originalUrl;
+  }
+  
+  // Extract the path after the S3 domain
+  if (originalUrl.startsWith(S3_PREFIX)) {
+    const path = originalUrl.substring(S3_PREFIX.length);
+    return `${SERVER_URL}/media-proxy/${path}`;
+  }
+  
+  // Handle old bucket name references
+  const oldS3Prefix = 'https://koshimart-media.s3.amazonaws.com/';
+  if (originalUrl.startsWith(oldS3Prefix)) {
+    const path = originalUrl.substring(oldS3Prefix.length);
+    return `${SERVER_URL}/media-proxy/${path}`;
+  }
+  
+  // If it's a relative path (without http or https prefix)
+  if (!originalUrl.startsWith('http://') && !originalUrl.startsWith('https://')) {
+    // If it's a path that looks like a media file
+    if (originalUrl.includes('/products/') || 
+        originalUrl.includes('/image/') || 
+        originalUrl.includes('/category/')) {
+      return `${SERVER_URL}/media-proxy/${originalUrl.replace(/^\/+/, '')}`;
+    }
+    // Otherwise, just make it a relative path from the server
+    return `${SERVER_URL}/media/${originalUrl.replace(/^\/+/, '')}`;
+  }
+  
+  return originalUrl; // Return original if not S3 or local media
 };
 
 /**
