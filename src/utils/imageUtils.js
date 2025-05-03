@@ -37,9 +37,22 @@ export const getImageUrl = (imageUrl) => {
     }
     
     // Check if image path starts with "/media" which is common in Django
-    if (imageUrl.startsWith('/media')) {
-      const finalUrl = `${SERVER_URL}${imageUrl}`;
+    if (imageUrl.startsWith('/media') || imageUrl.includes('/media/')) {
+      // Remove any leading slashes to prevent double slashes
+      const cleanPath = imageUrl.startsWith('/') ? imageUrl.substring(1) : imageUrl;
+      const finalUrl = `${SERVER_URL}/${cleanPath}`;
       if (DEBUG_IMAGES) console.log('Media URL combined with SERVER_URL:', finalUrl);
+      return finalUrl;
+    }
+    
+    // Special case for Django's media files that might not have /media/ prefix
+    if (imageUrl.includes('product/') || imageUrl.includes('category/') || 
+        imageUrl.includes('gallery/') || imageUrl.includes('vendor/') ||
+        imageUrl.includes('profile/')) {
+      // These are likely media paths
+      const mediaPath = imageUrl.startsWith('/') ? imageUrl.substring(1) : imageUrl;
+      const finalUrl = `${SERVER_URL}/media/${mediaPath}`;
+      if (DEBUG_IMAGES) console.log('Detected media path, combined with SERVER_URL:', finalUrl);
       return finalUrl;
     }
     

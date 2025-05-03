@@ -19,35 +19,65 @@ const ProductImage = ({ src, alt = 'Product Image', className = '', style = {}, 
   // Generate the correct image URL whenever the src changes
   useEffect(() => {
     if (src) {
-      const processedUrl = getImageUrl(src);
-      setImageUrl(processedUrl);
-      // Reset states when source changes
-      setError(false);
-      setLoaded(false);
+      try {
+        const processedUrl = getImageUrl(src);
+        console.log(`[${alt}] Processed URL:`, processedUrl);
+        setImageUrl(processedUrl);
+        // Reset states when source changes
+        setError(false);
+        setLoaded(false);
+        setRetryCount(0);
+      } catch (e) {
+        console.error("Error processing image URL:", e);
+        setError(true);
+      }
     } else {
       setImageUrl('https://via.placeholder.com/400?text=No+Image');
     }
-  }, [src]);
+  }, [src, alt]);
   
   const fallbackUrl = 'https://via.placeholder.com/400?text=No+Image';
   
   const handleError = () => {
-    console.warn(`Failed to load image: ${imageUrl}, retry count: ${retryCount}`);
+    console.warn(`[${alt}] Failed to load image: ${imageUrl}, retry count: ${retryCount}`);
     
     // Try to reload the image a few times before giving up
-    if (retryCount < 2 && imageUrl.includes('herokuapp.com')) {
+    if (retryCount < 3) {
       setRetryCount(prevCount => prevCount + 1);
       
-      // Force a reload of the image
-      setTimeout(() => {
-        setImageUrl(`${imageUrl}?retry=${retryCount + 1}`);
-      }, 1000);
+      // Try a different approach with each retry
+      if (retryCount === 0 && imageUrl.includes('/media/')) {
+        // First retry: Try with direct media URL
+        const newUrl = imageUrl.replace('/media/', '/staticfiles/media/');
+        console.log(`[${alt}] Retry 1: Trying staticfiles path: ${newUrl}`);
+        setTimeout(() => setImageUrl(newUrl), 800);
+      } else if (retryCount === 1) {
+        // Second retry: Try with cache-busting parameter
+        const cacheBuster = `?t=${new Date().getTime()}`;
+        console.log(`[${alt}] Retry 2: Adding cache buster: ${imageUrl}${cacheBuster}`);
+        setTimeout(() => setImageUrl(`${imageUrl}${cacheBuster}`), 800);
+      } else {
+        // Last retry: Try with different approach based on URL
+        if (imageUrl.includes('herokuapp.com')) {
+          // If it's a Heroku URL, try a different path construction
+          const parts = imageUrl.split('/');
+          const filename = parts[parts.length - 1];
+          const newUrl = `${parts.slice(0, 3).join('/')}/staticfiles/media/${filename}`;
+          console.log(`[${alt}] Retry 3: Reconstructed URL: ${newUrl}`);
+          setTimeout(() => setImageUrl(newUrl), 800);
+        } else {
+          console.log(`[${alt}] Retry 3: Final attempt with original URL`);
+          setTimeout(() => setImageUrl(`${imageUrl}?retry=final`), 800);
+        }
+      }
     } else {
+      console.error(`[${alt}] All retries failed for image: ${imageUrl}`);
       setError(true);
     }
   };
   
   const handleLoad = () => {
+    console.log(`[${alt}] Image loaded successfully: ${imageUrl}`);
     setLoaded(true);
   };
   
