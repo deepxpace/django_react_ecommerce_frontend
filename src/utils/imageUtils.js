@@ -24,41 +24,59 @@ export const getImageUrl = (imageUrl) => {
       return imageUrl;
     }
     
-    // For S3 URLs that might be relative paths
+    // Direct S3 URL formatting for koshimart-media bucket
     if (imageUrl.includes('s3.amazonaws.com') || imageUrl.includes('amazonaws.com')) {
-      // Fix potential URL formatting issues with S3
+      // Make sure it has the https:// prefix
       if (!imageUrl.startsWith('https://')) {
         const fixedUrl = `https://${imageUrl.replace(/^\/+/, '')}`;
         if (DEBUG_IMAGES) console.log('Fixed S3 URL:', fixedUrl);
         return fixedUrl;
       }
+      
       if (DEBUG_IMAGES) console.log('Using S3 URL as-is:', imageUrl);
       return imageUrl;
     }
     
-    // Check if image path starts with "/media" which is common in Django
-    if (imageUrl.startsWith('/media') || imageUrl.includes('/media/')) {
-      // Remove any leading slashes to prevent double slashes
-      const cleanPath = imageUrl.startsWith('/') ? imageUrl.substring(1) : imageUrl;
-      const finalUrl = `${SERVER_URL}/${cleanPath}`;
-      if (DEBUG_IMAGES) console.log('Media URL combined with SERVER_URL:', finalUrl);
-      return finalUrl;
+    // Handle Django media paths
+    if (imageUrl.includes('/media/') || 
+        imageUrl.includes('product/') || 
+        imageUrl.includes('category/') ||
+        imageUrl.includes('gallery/')) {
+      
+      // Extract the media path
+      let mediaPath = imageUrl;
+      if (imageUrl.includes('/media/')) {
+        mediaPath = imageUrl.split('/media/')[1];
+      } else if (imageUrl.startsWith('/')) {
+        mediaPath = imageUrl.substring(1);
+      }
+      
+      // Construct direct S3 URL
+      const s3Url = `https://koshimart-media.s3.amazonaws.com/${mediaPath}`;
+      if (DEBUG_IMAGES) console.log('Created direct S3 URL:', s3Url);
+      return s3Url;
     }
     
-    // Special case for Django's media files that might not have /media/ prefix
-    if (imageUrl.includes('product/') || imageUrl.includes('category/') || 
-        imageUrl.includes('gallery/') || imageUrl.includes('vendor/') ||
-        imageUrl.includes('profile/')) {
-      // These are likely media paths
-      const mediaPath = imageUrl.startsWith('/') ? imageUrl.substring(1) : imageUrl;
-      const finalUrl = `${SERVER_URL}/media/${mediaPath}`;
-      if (DEBUG_IMAGES) console.log('Detected media path, combined with SERVER_URL:', finalUrl);
-      return finalUrl;
+    // For any other relative paths, try the server URL
+    const backendUrl = SERVER_URL;
+    if (imageUrl.startsWith('/')) {
+      const fullUrl = `${backendUrl}${imageUrl}`;
+      if (DEBUG_IMAGES) console.log('Combined with SERVER_URL:', fullUrl);
+      return fullUrl;
     }
     
-    // Otherwise, prepend the server URL, ensuring no double slashes
-    const finalUrl = `${SERVER_URL}${imageUrl.startsWith('/') ? '' : '/'}${imageUrl}`;
-    if (DEBUG_IMAGES) console.log('Combined with SERVER_URL:', finalUrl);
+    // Try to guess if it's a media file and build an S3 URL
+    if (imageUrl.endsWith('.jpg') || imageUrl.endsWith('.jpeg') || 
+        imageUrl.endsWith('.png') || imageUrl.endsWith('.gif') ||
+        imageUrl.endsWith('.webp')) {
+      const s3Url = `https://koshimart-media.s3.amazonaws.com/${imageUrl}`;
+      if (DEBUG_IMAGES) console.log('Constructed S3 URL for media file:', s3Url);
+      return s3Url;
+    }
+    
+    // Last resort: prepend the server URL
+    const finalUrl = `${backendUrl}/${imageUrl}`;
+    if (DEBUG_IMAGES) console.log('Last resort URL with SERVER_URL:', finalUrl);
     return finalUrl;
   } catch (error) {
     console.error('Error processing image URL:', error);

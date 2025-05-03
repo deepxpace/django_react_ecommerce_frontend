@@ -16,64 +16,49 @@ const ProductImage = ({ src, alt = 'Product Image', className = '', style = {}, 
   const [retryCount, setRetryCount] = useState(0);
   const [imageUrl, setImageUrl] = useState('');
   
-  // Generate placeholder based on product details
-  const generatePlaceholder = (productName) => {
-    // Extract color if mentioned in the name
-    let bgColor = 'f8f9fa';
-    let textColor = '343a40';
+  // Format the S3 URL for public access
+  const formatS3Url = (url) => {
+    if (!url) return null;
     
-    const colors = {
-      'blue': {bg: '0d6efd', text: 'ffffff'},
-      'black': {bg: '212529', text: 'ffffff'},
-      'silver': {bg: 'adb5bd', text: '212529'},
-      'red': {bg: 'dc3545', text: 'ffffff'},
-      'green': {bg: '198754', text: 'ffffff'},
-      'yellow': {bg: 'ffc107', text: '212529'},
-      'pink': {bg: 'd63384', text: 'ffffff'},
-      'purple': {bg: '6f42c1', text: 'ffffff'},
-      'white': {bg: 'ffffff', text: '212529'},
-      'gray': {bg: '6c757d', text: 'ffffff'},
-      'orange': {bg: 'fd7e14', text: '212529'},
-      'gold': {bg: 'ffd700', text: '212529'},
-    };
+    // If it's already a proper URL, return it
+    if (url.startsWith('http')) return url;
     
-    // Check if any color is in the product name
-    Object.keys(colors).forEach(color => {
-      if (productName.toLowerCase().includes(color)) {
-        bgColor = colors[color].bg;
-        textColor = colors[color].text;
-      }
-    });
-    
-    // Create short name for display
-    let displayText = productName;
-    if (displayText.length > 20) {
-      // Get first few words only
-      displayText = displayText.split(' ').slice(0, 2).join(' ');
+    // Handle S3 URL patterns
+    if (url.includes('s3.amazonaws.com') || url.includes('amazonaws.com')) {
+      // Make sure it's a proper URL
+      return url.startsWith('https://') ? url : `https://${url}`;
     }
     
-    // Use product category if we can detect it
-    let category = 'Product';
-    if (productName.toLowerCase().includes('watch')) category = 'Watch';
-    if (productName.toLowerCase().includes('phone')) category = 'Phone';
-    if (productName.toLowerCase().includes('scooter')) category = 'Scooter';
-    if (productName.toLowerCase().includes('laptop')) category = 'Laptop';
+    // For koshimart-media bucket specifically
+    if (url.includes('/media/') || 
+        url.includes('product/') || 
+        url.includes('category/') ||
+        url.includes('gallery/')) {
+      
+      // Extract the media path
+      let mediaPath = url;
+      if (url.includes('/media/')) {
+        mediaPath = url.split('/media/')[1];
+      } else if (url.startsWith('/')) {
+        mediaPath = url.substring(1);
+      }
+      
+      // Construct direct S3 URL
+      return `https://koshimart-media.s3.amazonaws.com/${mediaPath}`;
+    }
     
-    // Create placeholder URL
-    return `https://placehold.co/400x400/${bgColor}/${textColor}?text=${encodeURIComponent(category)}`;
+    return url;
   };
   
   // Generate the correct image URL whenever the src changes
   useEffect(() => {
     if (src) {
       try {
-        // Since S3 is having CORS issues, let's just use a placeholder based on the product name
-        const placeholder = generatePlaceholder(alt);
-        setImageUrl(placeholder);
+        // Format the S3 URL directly without using proxies
+        const directS3Url = formatS3Url(src);
         
-        // For debug purposes, still log the original URLs
-        const processedUrl = getImageUrl(src);
-        console.log(`[${alt}] Original URL (not used due to CORS):`, processedUrl);
+        console.log(`[${alt}] Direct S3 URL:`, directS3Url);
+        setImageUrl(directS3Url);
         
         // Reset states when source changes
         setError(false);
@@ -93,16 +78,48 @@ const ProductImage = ({ src, alt = 'Product Image', className = '', style = {}, 
   const handleError = () => {
     console.warn(`[${alt}] Failed to load image: ${imageUrl}, retry count: ${retryCount}`);
     
-    // Try to load a different placeholder if even the first one fails
-    if (retryCount < 1) {
+    // Try different URLs if loading fails
+    if (retryCount < 2) {
       setRetryCount(prevCount => prevCount + 1);
       
-      // Try a completely different placeholder service
-      const backupUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(alt)}&background=random&size=200`;
-      console.log(`[${alt}] Trying backup placeholder:`, backupUrl);
-      setTimeout(() => setImageUrl(backupUrl), 500);
+      if (retryCount === 0) {
+        // First retry: Try with a different S3 URL format
+        try {
+          const originalUrl = src || '';
+          let retryUrl;
+          
+          if (originalUrl.includes('/media/')) {
+            // Try direct S3 object URL
+            const key = originalUrl.split('/media/')[1];
+            retryUrl = `https://koshimart-media.s3.amazonaws.com/${key}`;
+          } else if (originalUrl.includes('s3.amazonaws.com')) {
+            // Fix potential S3 URL issues
+            retryUrl = originalUrl
+              .replace(/^\//, 'https://')
+              .replace(/([^:]\/)\/+/g, '$1');
+          } else {
+            // Try using a direct URL to Heroku's staticfiles
+            const backendUrl = 'https://koshimart-api-6973a89b9858.herokuapp.com';
+            retryUrl = `${backendUrl}/media/${originalUrl.split('/').pop()}`;
+          }
+          
+          console.log(`[${alt}] Retry 1: Using alternative URL:`, retryUrl);
+          setTimeout(() => setImageUrl(retryUrl), 800);
+        } catch (e) {
+          console.error(`[${alt}] Error constructing retry URL:`, e);
+          setError(true);
+        }
+      } else {
+        // Final attempt: Try the Django backend's staticfiles directory
+        const filename = imageUrl.split('/').pop();
+        const backendUrl = 'https://koshimart-api-6973a89b9858.herokuapp.com';
+        const lastAttemptUrl = `${backendUrl}/staticfiles/media/${filename}`;
+        
+        console.log(`[${alt}] Retry 2: Last attempt with Django staticfiles:`, lastAttemptUrl);
+        setTimeout(() => setImageUrl(lastAttemptUrl), 800);
+      }
     } else {
-      console.error(`[${alt}] All placeholder attempts failed`);
+      console.error(`[${alt}] All image loading attempts failed`);
       setError(true);
     }
   };
