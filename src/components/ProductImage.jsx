@@ -16,25 +16,64 @@ const ProductImage = ({ src, alt = 'Product Image', className = '', style = {}, 
   const [retryCount, setRetryCount] = useState(0);
   const [imageUrl, setImageUrl] = useState('');
   
+  // Generate placeholder based on product details
+  const generatePlaceholder = (productName) => {
+    // Extract color if mentioned in the name
+    let bgColor = 'f8f9fa';
+    let textColor = '343a40';
+    
+    const colors = {
+      'blue': {bg: '0d6efd', text: 'ffffff'},
+      'black': {bg: '212529', text: 'ffffff'},
+      'silver': {bg: 'adb5bd', text: '212529'},
+      'red': {bg: 'dc3545', text: 'ffffff'},
+      'green': {bg: '198754', text: 'ffffff'},
+      'yellow': {bg: 'ffc107', text: '212529'},
+      'pink': {bg: 'd63384', text: 'ffffff'},
+      'purple': {bg: '6f42c1', text: 'ffffff'},
+      'white': {bg: 'ffffff', text: '212529'},
+      'gray': {bg: '6c757d', text: 'ffffff'},
+      'orange': {bg: 'fd7e14', text: '212529'},
+      'gold': {bg: 'ffd700', text: '212529'},
+    };
+    
+    // Check if any color is in the product name
+    Object.keys(colors).forEach(color => {
+      if (productName.toLowerCase().includes(color)) {
+        bgColor = colors[color].bg;
+        textColor = colors[color].text;
+      }
+    });
+    
+    // Create short name for display
+    let displayText = productName;
+    if (displayText.length > 20) {
+      // Get first few words only
+      displayText = displayText.split(' ').slice(0, 2).join(' ');
+    }
+    
+    // Use product category if we can detect it
+    let category = 'Product';
+    if (productName.toLowerCase().includes('watch')) category = 'Watch';
+    if (productName.toLowerCase().includes('phone')) category = 'Phone';
+    if (productName.toLowerCase().includes('scooter')) category = 'Scooter';
+    if (productName.toLowerCase().includes('laptop')) category = 'Laptop';
+    
+    // Create placeholder URL
+    return `https://placehold.co/400x400/${bgColor}/${textColor}?text=${encodeURIComponent(category)}`;
+  };
+  
   // Generate the correct image URL whenever the src changes
   useEffect(() => {
     if (src) {
       try {
-        // Get the processed URL from our utility
-        const processedUrl = getImageUrl(src);
-        console.log(`[${alt}] Original processed URL:`, processedUrl);
+        // Since S3 is having CORS issues, let's just use a placeholder based on the product name
+        const placeholder = generatePlaceholder(alt);
+        setImageUrl(placeholder);
         
-        // If it's an S3 URL, use an image proxy to bypass CORS
-        if (processedUrl.includes('s3.amazonaws.com')) {
-          // Use a CORS proxy service for Amazon S3 images
-          const encodedUrl = encodeURIComponent(processedUrl);
-          // Using imgproxy.net as a CORS proxy (up to 100MB per day for free)
-          const proxyUrl = `https://imgproxy.netlify.app/api/image?url=${encodedUrl}`;
-          console.log(`[${alt}] Using proxy URL:`, proxyUrl);
-          setImageUrl(proxyUrl);
-        } else {
-          setImageUrl(processedUrl);
-        }
+        // For debug purposes, still log the original URLs
+        const processedUrl = getImageUrl(src);
+        console.log(`[${alt}] Original URL (not used due to CORS):`, processedUrl);
         
         // Reset states when source changes
         setError(false);
@@ -54,29 +93,16 @@ const ProductImage = ({ src, alt = 'Product Image', className = '', style = {}, 
   const handleError = () => {
     console.warn(`[${alt}] Failed to load image: ${imageUrl}, retry count: ${retryCount}`);
     
-    // Try to reload the image a few times before giving up
-    if (retryCount < 2) {
+    // Try to load a different placeholder if even the first one fails
+    if (retryCount < 1) {
       setRetryCount(prevCount => prevCount + 1);
       
-      // Try different approaches
-      if (retryCount === 0 && imageUrl.includes('s3.amazonaws.com')) {
-        // First retry: Try a different proxy for S3 images
-        const originalUrl = imageUrl.includes('imgproxy.netlify.app') 
-          ? decodeURIComponent(imageUrl.split('url=')[1]) 
-          : imageUrl;
-        
-        // Try a different proxy service
-        const proxyUrl = `https://wsrv.nl/?url=${encodeURIComponent(originalUrl)}&n=-1`;
-        console.log(`[${alt}] Retry 1: Using alternative proxy:`, proxyUrl);
-        setTimeout(() => setImageUrl(proxyUrl), 800);
-      } else {
-        // Add a cache buster
-        const cacheBuster = `?t=${new Date().getTime()}`;
-        console.log(`[${alt}] Retry ${retryCount+1}: Adding cache buster`);
-        setTimeout(() => setImageUrl(prev => `${prev}${prev.includes('?') ? '&' : '?'}cb=${Date.now()}`), 800);
-      }
+      // Try a completely different placeholder service
+      const backupUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(alt)}&background=random&size=200`;
+      console.log(`[${alt}] Trying backup placeholder:`, backupUrl);
+      setTimeout(() => setImageUrl(backupUrl), 500);
     } else {
-      console.error(`[${alt}] All retries failed for image`);
+      console.error(`[${alt}] All placeholder attempts failed`);
       setError(true);
     }
   };
@@ -121,7 +147,6 @@ const ProductImage = ({ src, alt = 'Product Image', className = '', style = {}, 
           opacity: loaded && !error ? 1 : 0,
           ...style
         }}
-        crossOrigin="anonymous"
         {...props}
       />
     </div>
