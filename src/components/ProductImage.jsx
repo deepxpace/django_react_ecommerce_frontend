@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { SERVER_URL } from '../utils/constants';
 
 /**
- * ProductImage component that directly uses Cloudinary URLs
- * This version bypasses the backend proxy for improved performance
+ * ProductImage component that handles various image sources and provides fallbacks
+ * This implementation fixes the image loading issues by using the backend's media-proxy
  */
 const ProductImage = ({ 
   src, 
@@ -16,56 +16,71 @@ const ProductImage = ({
 }) => {
   const [imgError, setImgError] = useState(false);
   
-  // Function to get proper Cloudinary URL
-  const getCloudinaryUrl = (originalUrl) => {
+  // Get the image filename from the path
+  const getImageFilename = (path) => {
+    if (!path) return null;
+    return path.split('/').pop();
+  };
+  
+  // Get the best image URL 
+  const getImageUrl = (originalUrl) => {
     if (!originalUrl) return 'https://via.placeholder.com/400?text=No+Image';
     
-    // If already a Cloudinary URL, use it directly
-    if (originalUrl.includes('res.cloudinary.com')) {
+    // If it's already a complete URL with a protocol, use it directly
+    if (originalUrl.startsWith('http')) {
       return originalUrl;
     }
     
-    // Handle media URLs by converting to direct Cloudinary links
-    const cloudName = 'deepsimage'; // Your Cloudinary cloud name
+    // Get the filename from the path
+    const filename = getImageFilename(originalUrl);
     
-    if (originalUrl.includes('/media/')) {
-      // Extract path after /media/
-      const path = originalUrl.split('/media/')[1];
-      return `https://res.cloudinary.com/${cloudName}/image/upload/${path}`;
-    }
-    
-    // Handle relative paths
-    if (!originalUrl.startsWith('http')) {
-      let path = originalUrl;
-      // Remove leading slashes
-      path = path.replace(/^\/+/, '');
-      
-      // If it's already in the products folder
-      if (path.startsWith('products/')) {
-        return `https://res.cloudinary.com/${cloudName}/image/upload/${path}`;
-      }
-      
-      // Otherwise, assume it should be in products folder
-      return `https://res.cloudinary.com/${cloudName}/image/upload/products/${path}`;
-    }
-    
-    // Otherwise, use the original URL as a fallback
-    return originalUrl;
+    // Use the media-proxy endpoint which successfully translates to the correct storage location
+    return `${SERVER_URL}/media-proxy/${filename}`;
   };
   
-  // Get Cloudinary URL
-  const imageUrl = getCloudinaryUrl(src);
+  // Get the URL for the image
+  const imageUrl = getImageUrl(src);
   
-  // Handle image loading failure
+  // Handle image loading failure with fallbacks
   const handleImageError = (e) => {
+    if (imgError) return; // Prevent infinite fallback loops
     setImgError(true);
-    // Try direct backend URL as backup
-    if (!imageUrl.includes(SERVER_URL)) {
-      e.target.src = `${SERVER_URL}/media/${src.split('/').pop()}`;
-    } else {
-      // Last resort placeholder
-      e.target.src = `https://via.placeholder.com/${width || 400}x${height || 400}?text=Image+Not+Found`;
+    
+    try {
+      // Try direct backend URL as a different endpoint
+      const filename = getImageFilename(src);
+      
+      // Try Cloudinary direct as first fallback
+      if (filename) {
+        const cloudName = 'deepsimage';
+        e.target.src = `https://res.cloudinary.com/${cloudName}/image/upload/products/${filename}`;
+        
+        // Set a one-time error handler for this fallback attempt
+        const cloudinaryFallbackHandler = () => {
+          // If Cloudinary fails, try another backend endpoint
+          e.target.src = `${SERVER_URL}/media/${filename}`;
+          
+          // Set a final fallback to placeholder
+          e.target.onerror = () => {
+            e.target.src = `https://via.placeholder.com/${width || 400}x${height || 400}?text=Image+Not+Found`;
+            e.target.onerror = null; // Prevent further error handling
+          };
+          
+          // Remove this handler
+          e.target.removeEventListener('error', cloudinaryFallbackHandler);
+        };
+        
+        // Add the one-time error handler
+        e.target.addEventListener('error', cloudinaryFallbackHandler, { once: true });
+        return;
+      }
+    } catch (err) {
+      console.error("Image fallback error:", err);
     }
+    
+    // Final fallback if all else fails
+    e.target.src = `https://via.placeholder.com/${width || 400}x${height || 400}?text=Image+Not+Found`;
+    e.target.onerror = null; // Prevent further error handling
   };
   
   return (

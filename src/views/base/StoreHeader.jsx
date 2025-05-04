@@ -343,6 +343,15 @@ const StoreHeader = () => {
                   </Link>
                 </div>
               </li>
+
+              {/* DEBUG TOOLS - only visible in development */}
+              {process.env.NODE_ENV === 'development' && (
+                <li className="nav-item">
+                  <Link to="/debug/image/test.jpg" className="nav-link">
+                    <small>Image Debug</small>
+                  </Link>
+                </li>
+              )}
             </ul>
           </div>
         </div>

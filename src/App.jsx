@@ -46,6 +46,7 @@ import AddProduct from "./views/vendor/AddProduct";
 import UpdateProduct from "./views/vendor/UpdateProduct";
 import ApiTest from "./components/ApiTest";
 import ApiDebug from "./components/ApiDebug";
+import ImageDebug from './components/ImageDebug';
 
 function App() {
   const [cartCount, setCartCount] = useState();
@@ -147,6 +148,9 @@ function App() {
                 </PrivateRoute>
               }
             />
+
+            {/* Image debug route */}
+            <Route path='/debug/image/:imagePath' element={<ImageDebug />} />
 
             {/* VENDOR ROUTES */}
             <Route
