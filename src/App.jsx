@@ -44,6 +44,8 @@ import SettingsVendor from "./views/vendor/SettingsVendor";
 import Shop from "./views/vendor/Shop";
 import AddProduct from "./views/vendor/AddProduct";
 import UpdateProduct from "./views/vendor/UpdateProduct";
+import ApiTest from "./components/ApiTest";
+import ApiDebug from "./components/ApiDebug";
 
 function App() {
   const [cartCount, setCartCount] = useState();
@@ -243,6 +245,10 @@ function App() {
                 </PrivateRoute>
               }
             />
+
+            {/* Debug Routes */}
+            <Route path="/debug" element={<ApiDebug />} />
+            <Route path="/api-test" element={<ApiTest />} />
           </Routes>
         </MainWrapper>
         <StoreFooter />
