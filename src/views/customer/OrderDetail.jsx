@@ -14,8 +14,22 @@ function OrderDetail() {
   const userData = UserData();
   const param = useParams();
   const [isLoading, setIsLoading] = useState(true);
+  const [siteSettings, setSiteSettings] = useState({
+    currency_symbol: ""
+  });
 
   useEffect(() => {
+    // Fetch site settings
+    apiInstance.get("site-settings/")
+      .then(res => {
+        setSiteSettings(res.data);
+      })
+      .catch(err => {
+        console.error("Error fetching site settings:", err);
+        // Default to $ if there's an error
+        setSiteSettings({ currency_symbol: "$" });
+      });
+      
     setIsLoading(true);
     // Always use "current" if we're authenticated but user_id is null
     const userId = userData?.user_id || "current";
@@ -33,6 +47,8 @@ function OrderDetail() {
         setIsLoading(false);
       });
   }, [param.order_oid, isLoggedIn]);
+
+  const { currency_symbol } = siteSettings;
 
   return (
     <div className="container mt-3">
@@ -106,7 +122,7 @@ function OrderDetail() {
                   <div className="d-flex flex-column">
                     <span className="text-muted small mb-1">Order Total</span>
                     <span className="text-dark h3 mb-0 fw-bold">
-                      ${order.total}
+                      {currency_symbol}{order.total}
                     </span>
                   </div>
                 </div>
@@ -203,7 +219,7 @@ function OrderDetail() {
                                       {item.size && `| Variation: ${item.size}`}
                                     </span>
                                     <span className="d-block">
-                                      Qty: {item.qty} × ${item.price}
+                                      Qty: {item.qty} × {currency_symbol}{item.price}
                                     </span>
                                     {item.coupon && item.coupon.length > 0 && (
                                       <span className="d-block text-success">
@@ -241,16 +257,16 @@ function OrderDetail() {
                               </div>
                             </td>
                             <td className="py-3">
-                              <span className="fw-medium">${item.price}</span>
+                              <span className="fw-medium">{currency_symbol}{item.price}</span>
                             </td>
                             <td className="py-3">
                               <div>
                                 <span className="fw-medium">
-                                  ${item.sub_total}
+                                  {currency_symbol}{item.sub_total}
                                 </span>
                                 {parseFloat(item.saved) > 0 && (
                                   <div className="text-success small">
-                                    Saved: ${item.saved}
+                                    Saved: {currency_symbol}{item.saved}
                                   </div>
                                 )}
                               </div>
@@ -306,30 +322,30 @@ function OrderDetail() {
                 <div className="card-body">
                   <div className="d-flex justify-content-between mb-3">
                     <span className="text-muted">Subtotal</span>
-                    <span>${order.sub_total}</span>
+                    <span>{currency_symbol}{order.sub_total}</span>
                   </div>
                   <div className="d-flex justify-content-between mb-3">
                     <span className="text-muted">Shipping</span>
-                    <span>${order.shipping_amount}</span>
+                    <span>{currency_symbol}{order.shipping_amount}</span>
                   </div>
                   <div className="d-flex justify-content-between mb-3">
                     <span className="text-muted">Tax</span>
-                    <span>${order.tax_fee}</span>
+                    <span>{currency_symbol}{order.tax_fee}</span>
                   </div>
                   <div className="d-flex justify-content-between mb-3">
                     <span className="text-muted">Service Fee</span>
-                    <span>${order.service_fee}</span>
+                    <span>{currency_symbol}{order.service_fee}</span>
                   </div>
                   {parseFloat(order.saved) > 0 && (
                     <div className="d-flex justify-content-between mb-3">
                       <span className="text-success">Total Discount</span>
-                      <span className="text-success">-${order.saved}</span>
+                      <span className="text-success">-{currency_symbol}{order.saved}</span>
                     </div>
                   )}
                   <hr />
                   <div className="d-flex justify-content-between mb-0">
                     <span className="h5 mb-0">Total</span>
-                    <span className="h5 mb-0">${order.total}</span>
+                    <span className="h5 mb-0">{currency_symbol}{order.total}</span>
                   </div>
                 </div>
               </div>
