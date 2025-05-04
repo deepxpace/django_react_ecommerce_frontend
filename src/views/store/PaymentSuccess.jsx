@@ -5,6 +5,9 @@ import { useParams } from "react-router-dom";
 const PaymentSuccess = () => {
   const [order, setOrder] = useState({});
   const [loading, setLoading] = useState(true);
+  const [siteSettings, setSiteSettings] = useState({
+    currency_symbol: "$" // Default symbol
+  });
   const [paymentStatus, setPaymentStatus] = useState({
     state: "verifying",
     message: "Please hold on while we're verifying your payment",
@@ -78,6 +81,15 @@ const PaymentSuccess = () => {
   };
 
   useEffect(() => {
+    // Fetch site settings
+    apiInstance.get("site-settings/")
+      .then(res => {
+        setSiteSettings(res.data);
+      })
+      .catch(err => {
+        console.error("Error fetching site settings:", err);
+      });
+    
     const fetchOrderData = async () => {
       try {
         const res = await apiInstance.get(`checkout/${param.order_oid}/`);
@@ -137,6 +149,8 @@ const PaymentSuccess = () => {
   };
 
   const showOrderDetails = paymentStatus.state === "success";
+
+  const { currency_symbol } = siteSettings;
 
   return (
     <div className="container py-5">
@@ -377,12 +391,12 @@ const PaymentSuccess = () => {
                           </div>
                           <div className="col-md-4 text-md-end mt-3 mt-md-0">
                             <h6 className="fw-bold mb-0">
-                              ${parseFloat(item.price).toFixed(2)}
+                              {currency_symbol}{parseFloat(item.price).toFixed(2)}
                             </h6>
                             {parseFloat(item.saved) > 0 && (
                               <small className="text-success">
                                 <i className="fas fa-tag me-1"></i>
-                                Saved ${parseFloat(item.saved).toFixed(2)}
+                                Saved {currency_symbol}{parseFloat(item.saved).toFixed(2)}
                               </small>
                             )}
                           </div>
@@ -401,24 +415,24 @@ const PaymentSuccess = () => {
 
                     <div className="d-flex justify-content-between mb-2">
                       <span>Subtotal</span>
-                      <span>${parseFloat(order.sub_total).toFixed(2)}</span>
+                      <span>{currency_symbol}{parseFloat(order.sub_total).toFixed(2)}</span>
                     </div>
 
                     <div className="d-flex justify-content-between mb-2">
                       <span>Shipping Fee</span>
                       <span>
-                        ${parseFloat(order.shipping_amount).toFixed(2)}
+                        {currency_symbol}{parseFloat(order.shipping_amount).toFixed(2)}
                       </span>
                     </div>
 
                     <div className="d-flex justify-content-between mb-2">
                       <span>Service Fee</span>
-                      <span>${parseFloat(order.service_fee).toFixed(2)}</span>
+                      <span>{currency_symbol}{parseFloat(order.service_fee).toFixed(2)}</span>
                     </div>
 
                     <div className="d-flex justify-content-between mb-2">
                       <span>Tax</span>
-                      <span>${parseFloat(order.tax_fee).toFixed(2)}</span>
+                      <span>{currency_symbol}{parseFloat(order.tax_fee).toFixed(2)}</span>
                     </div>
 
                     {parseFloat(order.saved) > 0 && (
@@ -426,7 +440,7 @@ const PaymentSuccess = () => {
                         <span>
                           <i className="fas fa-tags me-2"></i>Savings
                         </span>
-                        <span>-${parseFloat(order.saved).toFixed(2)}</span>
+                        <span>-{currency_symbol}{parseFloat(order.saved).toFixed(2)}</span>
                       </div>
                     )}
 
@@ -435,7 +449,7 @@ const PaymentSuccess = () => {
                     <div className="d-flex justify-content-between text-dark">
                       <span className="fw-bold">Total</span>
                       <span className="fw-bold fs-5">
-                        ${parseFloat(order.total).toFixed(2)}
+                        {currency_symbol}{parseFloat(order.total).toFixed(2)}
                       </span>
                     </div>
                   </div>
@@ -591,10 +605,10 @@ const PaymentSuccess = () => {
                         </td>
                         <td>{item.qty}</td>
                         <td className="text-end">
-                          ${parseFloat(item.price).toFixed(2)}
+                          {currency_symbol}{parseFloat(item.price).toFixed(2)}
                           {parseFloat(item.saved) > 0 && (
                             <div className="small text-success">
-                              Saved: ${parseFloat(item.saved).toFixed(2)}
+                              Saved: {currency_symbol}{parseFloat(item.saved).toFixed(2)}
                             </div>
                           )}
                         </td>
@@ -607,7 +621,7 @@ const PaymentSuccess = () => {
                         Total:
                       </td>
                       <td className="text-end fw-bold">
-                        ${parseFloat(order.total).toFixed(2)}
+                        {currency_symbol}{parseFloat(order.total).toFixed(2)}
                       </td>
                     </tr>
                   </tfoot>

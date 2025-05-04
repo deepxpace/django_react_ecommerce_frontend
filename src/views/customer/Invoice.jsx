@@ -7,11 +7,23 @@ import moment from "moment";
 function Invoice() {
   const [order, setOrder] = useState({});
   const [orderItems, setOrderItems] = useState([]);
+  const [siteSettings, setSiteSettings] = useState({
+    currency_symbol: "$" // Default symbol
+  });
 
   const userData = UserData();
   const param = useParams();
 
   useEffect(() => {
+    // Fetch site settings first
+    apiInstance.get("site-settings/")
+      .then(res => {
+        setSiteSettings(res.data);
+      })
+      .catch(err => {
+        console.error("Error fetching site settings:", err);
+      });
+      
     apiInstance
       .get(`customer/order/${userData?.user_id}/${param.order_oid}/`)
       .then((res) => {
@@ -19,6 +31,8 @@ function Invoice() {
         setOrderItems(res.data.orderitem);
       });
   }, []);
+
+  const { currency_symbol } = siteSettings;
 
   const groupByVendor = (items) => {
     return items.reduce((acc, item) => {
@@ -171,14 +185,14 @@ function Invoice() {
                       </small>
                     </td>
                     <td className="text-end">
-                      ${parseFloat(item.price).toFixed(2)}
+                      {currency_symbol}{parseFloat(item.price).toFixed(2)}
                     </td>
                     <td className="text-end">{item.qty}</td>
                     <td className="text-end">
-                      ${parseFloat(item.sub_total).toFixed(2)}
+                      {currency_symbol}{parseFloat(item.sub_total).toFixed(2)}
                       {parseFloat(item.saved) > 0 && (
                         <div className="text-success small">
-                          Saved: ${calculateSavings(item)}
+                          Saved: {currency_symbol}{calculateSavings(item)}
                         </div>
                       )}
                     </td>
@@ -198,39 +212,39 @@ function Invoice() {
               <tr>
                 <td className="text-end fw-semibold">Subtotal:</td>
                 <td className="text-end">
-                  ${parseFloat(order.sub_total).toFixed(2)}
+                  {currency_symbol}{parseFloat(order.sub_total).toFixed(2)}
                 </td>
               </tr>
               <tr>
                 <td className="text-end fw-semibold">Shipping:</td>
                 <td className="text-end">
-                  ${parseFloat(order.shipping_amount).toFixed(2)}
+                  {currency_symbol}{parseFloat(order.shipping_amount).toFixed(2)}
                 </td>
               </tr>
               <tr>
                 <td className="text-end fw-semibold">Service Fee:</td>
                 <td className="text-end">
-                  ${parseFloat(order.service_fee).toFixed(2)}
+                  {currency_symbol}{parseFloat(order.service_fee).toFixed(2)}
                 </td>
               </tr>
               <tr>
                 <td className="text-end fw-semibold">Tax:</td>
                 <td className="text-end">
-                  ${parseFloat(order.tax_fee).toFixed(2)}
+                  {currency_symbol}{parseFloat(order.tax_fee).toFixed(2)}
                 </td>
               </tr>
               {order.saved > 0 && (
                 <tr className="text-success">
                   <td className="text-end fw-semibold">Total Savings:</td>
                   <td className="text-end">
-                    -${parseFloat(order.saved).toFixed(2)}
+                    -{currency_symbol}{parseFloat(order.saved).toFixed(2)}
                   </td>
                 </tr>
               )}
               <tr className="table-active">
                 <td className="text-end fw-bold">Total:</td>
                 <td className="text-end fw-bold">
-                  ${parseFloat(order.total).toFixed(2)}
+                  {currency_symbol}{parseFloat(order.total).toFixed(2)}
                 </td>
               </tr>
             </tbody>

@@ -15,6 +15,8 @@ const useAuthStore = create((set, get) => ({
         ? {
             user_id: user.user_id,
             username: user.username,
+            vendor_id: user.vendor_id || 0,
+            is_vendor: user.vendor_id ? user.vendor_id > 0 : false,
           }
         : null,
     }),
