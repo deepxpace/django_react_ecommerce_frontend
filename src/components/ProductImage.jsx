@@ -3,7 +3,7 @@ import { SERVER_URL } from '../utils/constants';
 
 /**
  * ProductImage component for displaying product images
- * This version uses direct Cloudinary URLs to bypass backend redirect issues
+ * Uses a reliable fallback system for image loading
  */
 const ProductImage = ({ 
   src, 
@@ -16,62 +16,36 @@ const ProductImage = ({
 }) => {
   const [imgError, setImgError] = useState(false);
   
-  // Get the best image URL
+  // Get the image URL with fallback
   const getImageUrl = (originalUrl) => {
-    // Default fallback for empty URLs
     if (!originalUrl) return 'https://via.placeholder.com/400?text=No+Image';
     
-    // Extract filename from the path
-    const getFilename = (path) => {
-      if (!path) return '';
-      return path.split('/').pop();
-    };
-    
-    const filename = getFilename(originalUrl);
-    
-    // If it's already a full URL like https://res.cloudinary.com, use it directly
+    // If it's already a full URL, use it directly
     if (originalUrl.startsWith('http')) {
       return originalUrl;
     }
     
-    // Use direct Cloudinary URL (most reliable method)
-    return `https://res.cloudinary.com/deepsimage/image/upload/products/${filename}`;
+    // For relative URLs, use the server URL
+    return `${SERVER_URL}${originalUrl}`;
   };
   
   const imageUrl = getImageUrl(src);
   
   const handleImageError = () => {
-    if (imgError) return; // Prevent additional error handling
+    if (imgError) return;
     setImgError(true);
   };
   
-  // If there's an error loading the image, try alternative methods
+  // If there's an error, show placeholder
   if (imgError) {
-    // Try to get the filename
-    const filename = src ? src.split('/').pop() : '';
-    
     return (
       <img
-        src={`${SERVER_URL}/media-proxy/${filename}`}
+        src="https://via.placeholder.com/400?text=Product+Image"
         alt={alt}
         className={className}
         width={width}
         height={height}
         style={style}
-        onError={(e) => {
-          // If the media-proxy also fails, show a placeholder
-          const img = document.createElement('img');
-          img.src = 'https://via.placeholder.com/400?text=Product+Image';
-          img.alt = alt;
-          img.className = className;
-          if (width) img.width = width;
-          if (height) img.height = height;
-          
-          // Replace the current image with the placeholder
-          if (e.target.parentNode) {
-            e.target.parentNode.replaceChild(img, e.target);
-          }
-        }}
         {...props}
       />
     );
