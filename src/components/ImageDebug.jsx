@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { SERVER_URL } from '../utils/constants';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 
 /**
- * ImageDebug component provides visual debugging for image loading issues
- * Can be added to any page to help diagnose why images aren't loading
+ * ImageDebug component - DIAGNOSTIC TOOL ONLY
+ * This is a standalone tool for debugging image loading issues
+ * It should ONLY be accessed via /debug/image/:imagePath 
  */
 const ImageDebug = () => {
   const { imagePath } = useParams();
@@ -12,6 +13,8 @@ const ImageDebug = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    console.log("ImageDebug tool loaded - this is a diagnostic component");
+    
     if (!imagePath) {
       setTestResults({
         error: 'No image path provided. Use /debug/image/your-image-filename.jpg'
@@ -84,7 +87,12 @@ const ImageDebug = () => {
   };
 
   if (isLoading) {
-    return <div className="p-4 bg-gray-100 rounded-md">Testing image paths...</div>;
+    return (
+      <div className="container mx-auto my-8 p-4">
+        <h2 className="text-2xl font-bold mb-4">Image Debug Tool</h2>
+        <div className="p-4 bg-gray-100 rounded-md">Testing image paths...</div>
+      </div>
+    );
   }
 
   // Check if any path works
@@ -92,7 +100,13 @@ const ImageDebug = () => {
 
   return (
     <div className="container mx-auto my-8 p-4">
-      <h2 className="text-2xl font-bold mb-4">Image Diagnostics</h2>
+      <h2 className="text-2xl font-bold mb-4">Image Debug Tool</h2>
+      <div className="bg-yellow-100 border-l-4 border-yellow-500 p-4 mb-4">
+        <p className="font-bold">This is a diagnostic tool only.</p>
+        <p>For troubleshooting image loading issues in development. Not part of the main application.</p>
+        <p><Link to="/" className="text-blue-600 underline">Return to homepage</Link></p>
+      </div>
+      
       <div className="p-4 bg-gray-100 rounded-md my-4">
         {testResults.error ? (
           <div className="text-red-500">{testResults.error}</div>
@@ -150,8 +164,8 @@ const ImageDebug = () => {
       
       <div className="p-4 bg-blue-50 border border-blue-200 rounded-md">
         <h3 className="text-lg font-semibold mb-2">Solution</h3>
-        <p>The ProductImage component has been updated to use direct Cloudinary URLs which will bypass the backend redirect loop that was causing image loading issues.</p>
-        <p className="mt-2">If you're still experiencing issues after this fix, try:</p>
+        <p>The ProductImage component has been updated to use the backend's media-proxy endpoint which properly handles image loading.</p>
+        <p className="mt-2">If you're still experiencing issues, try:</p>
         <ul className="list-disc ml-6 mt-2">
           <li>Clearing your browser cache</li>
           <li>Making sure images are properly uploaded to Cloudinary</li>

@@ -149,8 +149,14 @@ function App() {
               }
             />
 
-            {/* Image debug route */}
-            <Route path='/debug/image/:imagePath' element={<ImageDebug />} />
+            {/* DEBUG ROUTES - separate section for debugging tools */}
+            {process.env.NODE_ENV === 'development' && (
+              <>
+                <Route path="/debug/image/:imagePath" element={<ImageDebug />} />
+                <Route path="/debug" element={<ApiDebug />} />
+                <Route path="/api-test" element={<ApiTest />} />
+              </>
+            )}
 
             {/* VENDOR ROUTES */}
             <Route
@@ -249,10 +255,6 @@ function App() {
                 </PrivateRoute>
               }
             />
-
-            {/* Debug Routes */}
-            <Route path="/debug" element={<ApiDebug />} />
-            <Route path="/api-test" element={<ApiTest />} />
           </Routes>
         </MainWrapper>
         <StoreFooter />

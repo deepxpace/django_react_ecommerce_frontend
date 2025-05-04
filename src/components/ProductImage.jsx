@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { SERVER_URL } from '../utils/constants';
 
 /**
- * ProductImage component that handles various image sources and provides fallbacks
- * This implementation fixes the image loading issues by using the backend's media-proxy
+ * ProductImage component that handles image loading with proper fallbacks
+ * Fixed to directly use the media-proxy endpoint which works correctly
  */
 const ProductImage = ({ 
   src, 
@@ -16,71 +16,66 @@ const ProductImage = ({
 }) => {
   const [imgError, setImgError] = useState(false);
   
-  // Get the image filename from the path
-  const getImageFilename = (path) => {
-    if (!path) return null;
-    return path.split('/').pop();
+  // Extract filename from path
+  const getFilename = (imagePath) => {
+    if (!imagePath) return null;
+    // Handle both full URLs and relative paths
+    return imagePath.split('/').pop();
   };
   
-  // Get the best image URL 
-  const getImageUrl = (originalUrl) => {
-    if (!originalUrl) return 'https://via.placeholder.com/400?text=No+Image';
+  // Function to get proper image URL
+  const getProperImageUrl = (originalSrc) => {
+    // Default placeholder for empty sources
+    if (!originalSrc) return 'https://via.placeholder.com/400?text=No+Image';
     
-    // If it's already a complete URL with a protocol, use it directly
-    if (originalUrl.startsWith('http')) {
-      return originalUrl;
+    // If it's already a full URL (not relative), use it directly
+    if (originalSrc.startsWith('http')) {
+      return originalSrc;
     }
     
-    // Get the filename from the path
-    const filename = getImageFilename(originalUrl);
+    // Get the filename to use with media-proxy
+    const filename = getFilename(originalSrc);
+    if (!filename) return 'https://via.placeholder.com/400?text=No+Image';
     
-    // Use the media-proxy endpoint which successfully translates to the correct storage location
+    // Use the backend's media-proxy endpoint which works reliably
     return `${SERVER_URL}/media-proxy/${filename}`;
   };
   
-  // Get the URL for the image
-  const imageUrl = getImageUrl(src);
+  // Get the primary image URL
+  const imageUrl = getProperImageUrl(src);
   
-  // Handle image loading failure with fallbacks
+  // Handle image loading errors with fallbacks
   const handleImageError = (e) => {
     if (imgError) return; // Prevent infinite fallback loops
     setImgError(true);
     
     try {
-      // Try direct backend URL as a different endpoint
-      const filename = getImageFilename(src);
-      
-      // Try Cloudinary direct as first fallback
-      if (filename) {
-        const cloudName = 'deepsimage';
-        e.target.src = `https://res.cloudinary.com/${cloudName}/image/upload/products/${filename}`;
-        
-        // Set a one-time error handler for this fallback attempt
-        const cloudinaryFallbackHandler = () => {
-          // If Cloudinary fails, try another backend endpoint
-          e.target.src = `${SERVER_URL}/media/${filename}`;
-          
-          // Set a final fallback to placeholder
-          e.target.onerror = () => {
-            e.target.src = `https://via.placeholder.com/${width || 400}x${height || 400}?text=Image+Not+Found`;
-            e.target.onerror = null; // Prevent further error handling
-          };
-          
-          // Remove this handler
-          e.target.removeEventListener('error', cloudinaryFallbackHandler);
-        };
-        
-        // Add the one-time error handler
-        e.target.addEventListener('error', cloudinaryFallbackHandler, { once: true });
+      const filename = getFilename(src);
+      if (!filename) {
+        e.target.src = `https://via.placeholder.com/${width || 400}x${height || 400}?text=Image+Not+Found`;
         return;
       }
+      
+      // First fallback: Try direct Cloudinary URL
+      const cloudName = 'deepsimage';
+      e.target.src = `https://res.cloudinary.com/${cloudName}/image/upload/products/${filename}`;
+      
+      // Set up fallback chain
+      e.target.onload = null; // Clear any existing handlers
+      e.target.onerror = () => {
+        // Second fallback: Try regular media endpoint
+        e.target.src = `${SERVER_URL}/media/${filename}`;
+        e.target.onerror = () => {
+          // Final fallback: Use placeholder
+          e.target.src = `https://via.placeholder.com/${width || 400}x${height || 400}?text=Image+Not+Found`;
+          e.target.onerror = null; // End the chain
+        };
+      };
     } catch (err) {
-      console.error("Image fallback error:", err);
+      console.error('Image fallback error:', err);
+      // If all else fails, use a placeholder
+      e.target.src = `https://via.placeholder.com/${width || 400}x${height || 400}?text=Image+Not+Found`;
     }
-    
-    // Final fallback if all else fails
-    e.target.src = `https://via.placeholder.com/${width || 400}x${height || 400}?text=Image+Not+Found`;
-    e.target.onerror = null; // Prevent further error handling
   };
   
   return (
