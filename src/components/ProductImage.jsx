@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { SERVER_URL } from '../utils/constants';
 
 /**
- * ProductImage component that handles image loading with proper fallbacks
- * Fixed to directly use the media-proxy endpoint which works correctly
+ * ProductImage component for displaying product images
+ * This version uses the media-proxy endpoint which directly serves images
  */
 const ProductImage = ({ 
   src, 
@@ -16,67 +16,47 @@ const ProductImage = ({
 }) => {
   const [imgError, setImgError] = useState(false);
   
-  // Extract filename from path
-  const getFilename = (imagePath) => {
-    if (!imagePath) return null;
-    // Handle both full URLs and relative paths
-    return imagePath.split('/').pop();
-  };
-  
-  // Function to get proper image URL
-  const getProperImageUrl = (originalSrc) => {
-    // Default placeholder for empty sources
-    if (!originalSrc) return 'https://via.placeholder.com/400?text=No+Image';
+  // Get the best image URL
+  const getImageUrl = (originalUrl) => {
+    // Default fallback for empty URLs
+    if (!originalUrl) return 'https://via.placeholder.com/400?text=No+Image';
     
-    // If it's already a full URL (not relative), use it directly
-    if (originalSrc.startsWith('http')) {
-      return originalSrc;
+    // Extract filename from the path
+    const getFilename = (path) => path.split('/').pop();
+    const filename = getFilename(originalUrl);
+    
+    // If it's already a full URL like https://res.cloudinary.com, use it directly
+    if (originalUrl.startsWith('http')) {
+      return originalUrl;
     }
     
-    // Get the filename to use with media-proxy
-    const filename = getFilename(originalSrc);
-    if (!filename) return 'https://via.placeholder.com/400?text=No+Image';
-    
-    // Use the backend's media-proxy endpoint which works reliably
+    // Primary method: use media-proxy endpoint (this works reliably)
     return `${SERVER_URL}/media-proxy/${filename}`;
   };
   
-  // Get the primary image URL
-  const imageUrl = getProperImageUrl(src);
+  const imageUrl = getImageUrl(src);
   
-  // Handle image loading errors with fallbacks
-  const handleImageError = (e) => {
-    if (imgError) return; // Prevent infinite fallback loops
-    setImgError(true);
-    
-    try {
-      const filename = getFilename(src);
-      if (!filename) {
-        e.target.src = `https://via.placeholder.com/${width || 400}x${height || 400}?text=Image+Not+Found`;
-        return;
-      }
-      
-      // First fallback: Try direct Cloudinary URL
-      const cloudName = 'deepsimage';
-      e.target.src = `https://res.cloudinary.com/${cloudName}/image/upload/products/${filename}`;
-      
-      // Set up fallback chain
-      e.target.onload = null; // Clear any existing handlers
-      e.target.onerror = () => {
-        // Second fallback: Try regular media endpoint
-        e.target.src = `${SERVER_URL}/media/${filename}`;
-        e.target.onerror = () => {
-          // Final fallback: Use placeholder
-          e.target.src = `https://via.placeholder.com/${width || 400}x${height || 400}?text=Image+Not+Found`;
-          e.target.onerror = null; // End the chain
-        };
-      };
-    } catch (err) {
-      console.error('Image fallback error:', err);
-      // If all else fails, use a placeholder
-      e.target.src = `https://via.placeholder.com/${width || 400}x${height || 400}?text=Image+Not+Found`;
+  const handleImageError = () => {
+    // If the image fails to load, set the error state
+    if (!imgError) {
+      setImgError(true);
     }
   };
+  
+  // If there's an error loading the image, show a placeholder
+  if (imgError) {
+    return (
+      <div 
+        className={`${className} bg-gray-200 flex items-center justify-center`}
+        style={{ width: width || 250, height: height || 250, ...style }}
+        {...props}
+      >
+        <div className="text-gray-500 text-xs text-center p-2">
+          Image Not Available
+        </div>
+      </div>
+    );
+  }
   
   return (
     <img
@@ -85,7 +65,7 @@ const ProductImage = ({
       className={className}
       width={width}
       height={height}
-      style={{ objectFit: 'cover', ...style }}
+      style={style}
       onError={handleImageError}
       {...props}
     />
